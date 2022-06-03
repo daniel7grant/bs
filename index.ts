@@ -1,5 +1,6 @@
 import { constants } from 'fs';
 import { readFile, access, mkdir, writeFile } from 'fs/promises';
+import { compile } from 'handlebars';
 import { load } from 'js-yaml';
 import path from 'path';
 import yargs from 'yargs';
@@ -90,16 +91,28 @@ async function checkFile(filename: string): Promise<boolean> {
     return true;
 }
 
-async function create(template: BsTemplate, params: Record<string, any>) {
-    const existingFiles = await Promise.all(template.files.map((f) => f.name).filter(checkFile));
+async function renderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
+    if (isFileWithContent(file)) {
+        return {
+            name: compile(file.name)(params),
+            content: compile(file.content)(params),
+        };
+    }
 
-    if (existingFiles.length > 0) {
-        console.warn(`Files already exist: ${existingFiles.join(', ')}.`);
+    throw new Error();
+}
+
+async function create(template: BsTemplate, params: Record<string, any>) {
+	const renderedFiles = await Promise.all(template.files.map(f => renderFile(f, params)));
+    const isFileAvailable = await Promise.all(renderedFiles.map((f) => f.name).map(checkFile));
+
+    if (isFileAvailable.some(f => f === false)) {
+        console.warn(`Files already exist, add --force to overwrite.`);
         process.exit(0);
     }
 
     return Promise.all(
-        template.files.map(async (file) => {
+        renderedFiles.map(async (file) => {
             if (isFileWithContent(file)) {
                 await writeFile(file.name, file.content);
             }
