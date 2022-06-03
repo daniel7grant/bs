@@ -102,7 +102,7 @@ async function renderFile(file: BsFile, params: Record<string, any>): Promise<Bs
     throw new Error();
 }
 
-async function create(template: BsTemplate, params: Record<string, any>) {
+async function create(template: BsTemplate, params: Record<string, any>): Promise<BsFile[]> {
 	const renderedFiles = await Promise.all(template.files.map(f => renderFile(f, params)));
     const isFileAvailable = await Promise.all(renderedFiles.map((f) => f.name).map(checkFile));
 
@@ -116,6 +116,8 @@ async function create(template: BsTemplate, params: Record<string, any>) {
             if (isFileWithContent(file)) {
                 await writeFile(file.name, file.content);
             }
+
+			return file;
         })
     );
 }
@@ -129,7 +131,10 @@ async function main() {
         console.error(`Template "${templateName}" not found in ${filename}.`);
         process.exit(1);
     }
-    await create(template, { name });
+    const createdFiles = await create(template, { name });
+	createdFiles.forEach((file) => {
+		console.log(`File "${file.name}" created.`);
+	});
 }
 
 main().catch((err) => console.error(err));
