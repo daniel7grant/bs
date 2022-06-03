@@ -1,0 +1,5 @@
+# testing values
+.bsconfig.yaml
+components
+node_modules/
+index.js
