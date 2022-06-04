@@ -75,6 +75,10 @@ async function exists(filename: string): Promise<boolean> {
     );
 }
 
+async function chainPromises<T>(promises: Promise<T>[]): Promise<T> {
+    return promises.reduce((previousPromise, promise) => previousPromise.then(() => promise));
+}
+
 function subdirs(filename: string): string[] {
     const { dir } = path.parse(filename);
     if (dir.startsWith('/')) {
@@ -111,10 +115,7 @@ async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> 
     const dirsToCreate = renderedFiles
         .map((f) => subdirs(f.name))
         .reduce((set, dirs) => dirs.reduce((set, dir) => set.add(dir), set), new Set<string>());
-    await Array.from(dirsToCreate).reduce<Promise<void>>(
-        (previousCreate, dir) => previousCreate.then(() => mkdir(dir)),
-        Promise.resolve()
-    );
+    await chainPromises(Array.from(dirsToCreate).map((dir) => mkdir(dir)));
 
     return Promise.all(
         renderedFiles.map(async (file) => {
