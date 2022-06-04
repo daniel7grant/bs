@@ -75,22 +75,15 @@ async function exists(filename: string): Promise<boolean> {
     );
 }
 
-async function checkFile(filename: string): Promise<boolean> {
-    if (await exists(filename)) {
-        return false;
+function subdirs(filename: string): string[] {
+    const { dir } = path.parse(filename);
+    if (dir.startsWith('/')) {
+        console.warn('Paths starting with "/" will be converted to local path.');
     }
-    const filepath = path.parse(filename);
-    const dirs = filepath.dir.split(path.sep);
-    await dirs.reduce(async (fullDirPromise, dir) => {
-        return fullDirPromise.then(async (fullDir) => {
-            const newFullDir = path.join(fullDir, dir);
-            if (!(await exists(newFullDir))) {
-                await mkdir(newFullDir);
-            }
-            return newFullDir;
-        });
-    }, Promise.resolve(''));
-    return true;
+    return dir.split('/').reduce<string[]>((subdirs, newDir) => {
+        const last = subdirs[subdirs.length - 1];
+        return last ? [...subdirs, path.join(last, newDir)] : [newDir];
+    }, []);
 }
 
 async function renderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
@@ -108,12 +101,20 @@ async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> 
     const renderedFiles = await Promise.all(
         names.flatMap((name) => template.files.map((f) => renderFile(f, { name })))
     );
-	
-    const isFileAvailable = await Promise.all(renderedFiles.map((f) => f.name).map(checkFile));
-    if (isFileAvailable.some((f) => f === false)) {
+
+    const existingFiles = await Promise.all(renderedFiles.map((f) => f.name).map(exists));
+    if (existingFiles.some((f) => f === true)) {
         console.warn(`Files already exist, add --force to overwrite.`);
         process.exit(0);
     }
+
+    const dirsToCreate = renderedFiles
+        .map((f) => subdirs(f.name))
+        .reduce((set, dirs) => dirs.reduce((set, dir) => set.add(dir), set), new Set<string>());
+    await Array.from(dirsToCreate).reduce<Promise<void>>(
+        (previousCreate, dir) => previousCreate.then(() => mkdir(dir)),
+        Promise.resolve()
+    );
 
     return Promise.all(
         renderedFiles.map(async (file) => {
