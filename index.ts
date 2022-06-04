@@ -39,16 +39,18 @@ async function loadConfig(filename: string): Promise<BsConfig> {
 
 async function parseArguments() {
     return yargs(hideBin(process.argv))
-        .command('create <template> [name]', 'Generate new template', (yargs) => {
+        .command('create <template> <names..>', 'Generate new template', (yargs) => {
             return yargs
                 .positional('template', {
                     describe: 'the template to create',
                     type: 'string',
-                    demandOption: true,
+                    demandOption: true
                 })
-                .positional('name', {
-                    describe: '(optional) the parameter of the template',
+                .positional('names', {
+                    describe: 'the name or path to pass to the template',
                     type: 'string',
+                    demandOption: true,
+                    array: true,
                 });
         })
         .parseAsync();
@@ -103,10 +105,10 @@ async function renderFile(file: BsFile, params: Record<string, any>): Promise<Bs
 }
 
 async function create(template: BsTemplate, params: Record<string, any>): Promise<BsFile[]> {
-	const renderedFiles = await Promise.all(template.files.map(f => renderFile(f, params)));
+    const renderedFiles = await Promise.all(template.files.map((f) => renderFile(f, params)));
     const isFileAvailable = await Promise.all(renderedFiles.map((f) => f.name).map(checkFile));
 
-    if (isFileAvailable.some(f => f === false)) {
+    if (isFileAvailable.some((f) => f === false)) {
         console.warn(`Files already exist, add --force to overwrite.`);
         process.exit(0);
     }
@@ -117,7 +119,7 @@ async function create(template: BsTemplate, params: Record<string, any>): Promis
                 await writeFile(file.name, file.content);
             }
 
-			return file;
+            return file;
         })
     );
 }
@@ -125,16 +127,16 @@ async function create(template: BsTemplate, params: Record<string, any>): Promis
 async function main() {
     const filename = './bsconfig.yaml';
     const config = await loadConfig(filename);
-    const { template: templateName, name } = await parseArguments();
+    const { template: templateName, names } = await parseArguments();
     const template = findTemplate(config.templates, templateName);
     if (!template) {
         console.error(`Template "${templateName}" not found in ${filename}.`);
         process.exit(1);
     }
-    const createdFiles = await create(template, { name });
-	createdFiles.forEach((file) => {
-		console.log(`File "${file.name}" created.`);
-	});
+    const createdFiles = await Promise.all(names.map((name) => create(template, { name })));
+    createdFiles.flat().forEach((file) => {
+        console.log(`File "${file.name}" created.`);
+    });
 }
 
 main().catch((err) => console.error(err));
