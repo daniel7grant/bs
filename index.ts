@@ -44,7 +44,7 @@ async function parseArguments() {
                 .positional('template', {
                     describe: 'the template to create',
                     type: 'string',
-                    demandOption: true
+                    demandOption: true,
                 })
                 .positional('names', {
                     describe: 'the name or path to pass to the template',
@@ -104,10 +104,12 @@ async function renderFile(file: BsFile, params: Record<string, any>): Promise<Bs
     throw new Error();
 }
 
-async function create(template: BsTemplate, params: Record<string, any>): Promise<BsFile[]> {
-    const renderedFiles = await Promise.all(template.files.map((f) => renderFile(f, params)));
+async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> {
+    const renderedFiles = await Promise.all(
+        names.flatMap((name) => template.files.map((f) => renderFile(f, { name })))
+    );
+	
     const isFileAvailable = await Promise.all(renderedFiles.map((f) => f.name).map(checkFile));
-
     if (isFileAvailable.some((f) => f === false)) {
         console.warn(`Files already exist, add --force to overwrite.`);
         process.exit(0);
@@ -133,7 +135,7 @@ async function main() {
         console.error(`Template "${templateName}" not found in ${filename}.`);
         process.exit(1);
     }
-    const createdFiles = await Promise.all(names.map((name) => create(template, { name })));
+    const createdFiles = await create(template, names);
     createdFiles.flat().forEach((file) => {
         console.log(`File "${file.name}" created.`);
     });
