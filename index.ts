@@ -1,3 +1,4 @@
+#!/usr/bin/ts-node
 import { constants } from 'fs';
 import { readFile, access, mkdir, writeFile } from 'fs/promises';
 import { compile } from 'handlebars';
@@ -53,6 +54,8 @@ async function parseArguments() {
                     array: true,
                 });
         })
+        .showHelpOnFail(true)
+        .demandCommand(1, '')
         .parseAsync();
 }
 
@@ -66,17 +69,9 @@ function isFileWithContent(file: BsFile): file is BsFileWithContent {
 
 async function exists(filename: string): Promise<boolean> {
     return access(filename, constants.F_OK).then(
-        () => {
-            return true;
-        },
-        () => {
-            return false;
-        }
+        () => true,
+        () => false
     );
-}
-
-async function chainPromises<T>(promises: Promise<T>[]): Promise<T> {
-    return promises.reduce((previousPromise, promise) => previousPromise.then(() => promise));
 }
 
 function subdirs(filename: string): string[] {
@@ -115,7 +110,16 @@ async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> 
     const dirsToCreate = renderedFiles
         .map((f) => subdirs(f.name))
         .reduce((set, dirs) => dirs.reduce((set, dir) => set.add(dir), set), new Set<string>());
-    await chainPromises(Array.from(dirsToCreate).map((dir) => mkdir(dir)));
+    await Array.from(dirsToCreate).reduce(
+        (previousPromise, dir) =>
+            previousPromise.then(async () => {
+                if (!(await exists(dir))) {
+					console.log(`Directory "${dir}" created.`);
+                    mkdir(dir);
+                }
+            }),
+        Promise.resolve()
+    );
 
     return Promise.all(
         renderedFiles.map(async (file) => {
