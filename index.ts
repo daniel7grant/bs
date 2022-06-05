@@ -29,7 +29,9 @@ interface BsConfig {
 
 async function loadConfig(filename: string): Promise<BsConfig> {
     try {
-        const content = await readFile('./.bsconfig.yaml', 'utf8');
+		// TODO: load from multiple files
+        const content = await readFile(filename, 'utf8');
+		// TODO: add validation for yaml loading
         const config = load(content) as BsConfig;
         return config;
     } catch (error: any) {
@@ -41,6 +43,7 @@ async function loadConfig(filename: string): Promise<BsConfig> {
 async function parseArguments() {
     return yargs(hideBin(process.argv))
         .command('create <template> <names..>', 'Generate new template', (yargs) => {
+			// TODO: add dynamic loading for template names and option parameters
             return yargs
                 .positional('template', {
                     describe: 'the template to create',
@@ -88,6 +91,7 @@ function subdirs(filename: string): string[] {
 async function renderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
     if (isFileWithContent(file)) {
         return {
+			// TODO: add helper functions
             name: compile(file.name)(params),
             content: compile(file.content)(params),
         };
@@ -98,6 +102,7 @@ async function renderFile(file: BsFile, params: Record<string, any>): Promise<Bs
 
 async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> {
     const renderedFiles = await Promise.all(
+		// TODO: add more parameters to rendering
         names.flatMap((name) => template.files.map((f) => renderFile(f, { name })))
     );
 
@@ -133,7 +138,7 @@ async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> 
 }
 
 async function main() {
-    const filename = './bsconfig.yaml';
+    const filename = '.bsconfig.yaml';
     const config = await loadConfig(filename);
     const { template: templateName, names } = await parseArguments();
     const template = findTemplate(config.templates, templateName);
