@@ -6,17 +6,16 @@ const validateBsFile = validate<BsFile>({
     content: [isString()],
 });
 
-const validateBsParameter = validate<BsParameter>(
-    {
-        name: [isString()],
-    }
-);
+const validateBsParameter = validate<BsParameter>({
+    name: [isString()],
+});
 
 export const validateBsConfig = validate<BsConfig>({
     templates: arrayOf({
+        name: [isString()],
+        namespace: [isString()],
         aliases: arrayOf([isString()]),
         files: arrayOf(validateBsFile),
-        name: [isString()],
         parameters: optional(arrayOf(validateBsParameter)),
     }),
 });

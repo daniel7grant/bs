@@ -15,6 +15,7 @@ export interface BsParameter {
 
 export interface BsTemplate {
     name: string;
+	namespace?: string;
     aliases: string[];
     parameters?: BsParameter[];
     files: BsFile[];

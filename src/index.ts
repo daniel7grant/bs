@@ -1,4 +1,3 @@
-import { convertNameToPath } from 'modules/utils';
 import { create } from './commands/create';
 import { parseArguments } from './modules/arguments';
 import { findTemplate, loadConfig } from './modules/config';

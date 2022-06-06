@@ -1,11 +1,10 @@
 import { mkdir, writeFile } from 'fs/promises';
 import { BsTemplate, BsFile, isFileWithContent } from '../types';
 import { renderFile } from '../modules/render';
-import { convertNameToPath, exists, subdirs } from '../modules/utils';
+import { exists, subdirs } from '../modules/utils';
 
 export async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> {
     const renderedFiles = await Promise.all(
-        // TODO: add more parameters to rendering
         names.flatMap((name) => template.files.map((f) => renderFile(f, { name })))
     );
 

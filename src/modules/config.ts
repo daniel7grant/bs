@@ -4,7 +4,11 @@ import { BsConfig, BsTemplate } from '../types';
 import { validateBsConfig } from './validation';
 
 export function findTemplate(templates: BsTemplate[], name: string): BsTemplate | undefined {
-    return templates.find((t) => t.name === name || t.aliases.includes(name));
+    return (
+        templates.find((t) => `${t.namespace}:${t.name}` === name) ||
+        templates.find((t) => t.name === name) ||
+        templates.find((t) => t.aliases.includes(name))
+    );
 }
 
 export async function loadConfig(filename: string): Promise<BsConfig> {
