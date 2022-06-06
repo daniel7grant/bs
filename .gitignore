@@ -1,5 +1,7 @@
+# building values
+dist/
+node_modules/
+
 # testing values
 .bsconfig.yaml
 components
-node_modules/
-index.js
