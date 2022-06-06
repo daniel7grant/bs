@@ -1,5 +1,5 @@
 export interface BsFileWithContent {
-    name: string;
+    path: string;
     content: string;
 }
 
@@ -16,7 +16,7 @@ export interface BsParameter {
 export interface BsTemplate {
     name: string;
     aliases: string[];
-    parameters: BsParameter[];
+    parameters?: BsParameter[];
     files: BsFile[];
 }
 

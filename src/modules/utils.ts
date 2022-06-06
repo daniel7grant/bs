@@ -19,3 +19,19 @@ export function subdirs(filename: string): string[] {
         return last ? [...subdirs, path.join(last, newDir)] : [newDir];
     }, []);
 }
+
+const nameRegex = '[a-zA-Z0-9_-]*';
+export function convertNameToPath(name: string, path: string): { name: string; path: string } {
+    if (name.match(`^${nameRegex}$`)) {
+        return {
+            name,
+            path: path.replace(/\{\{ ?name ?\}\}/, name),
+        };
+    }
+
+    const extractedName = name.match(path.replace('{{ name }}', `(${nameRegex})`));
+    if (!extractedName) {
+        throw Error(`Path "${name}" does not match config path "${path}".`);
+    }
+    return { name: extractedName[1], path: name };
+}
