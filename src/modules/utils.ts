@@ -9,6 +9,15 @@ export async function exists(filename: string): Promise<boolean> {
     );
 }
 
+export async function firstExists(filenames: string[]): Promise<string | undefined> {
+    for (const filename of filenames) {
+        if (await exists(filename)) {
+            return filename;
+        }
+    }
+    return undefined;
+}
+
 export function subdirs(filename: string): string[] {
     const { dir } = path.parse(filename);
     if (dir.startsWith('/')) {

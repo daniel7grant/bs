@@ -3,9 +3,13 @@ import { BsTemplate, BsFile, isFileWithContent } from '../types';
 import { renderFile } from '../modules/render';
 import { exists, subdirs } from '../modules/utils';
 
-export async function create(template: BsTemplate, names: string[]): Promise<BsFile[]> {
+export async function create(
+    template: BsTemplate,
+    names: string[],
+    params: { [x: string]: unknown }
+): Promise<BsFile[]> {
     const renderedFiles = await Promise.all(
-        names.flatMap((name) => template.files.map((f) => renderFile(f, { name })))
+        names.flatMap((name) => template.files.map((f) => renderFile(f, { name, ...params })))
     );
 
     const existingFiles = await Promise.all(renderedFiles.map((f) => f.path).map(exists));

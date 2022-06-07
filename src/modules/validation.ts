@@ -1,4 +1,4 @@
-import validate, { arrayOf, isString, optional } from 'dvali';
+import validate, { arrayOf, isString, optional, isBool } from 'dvali';
 import { BsFile, BsParameter, BsConfig } from '../types';
 
 const validateBsFile = validate<BsFile>({
@@ -8,6 +8,10 @@ const validateBsFile = validate<BsFile>({
 
 const validateBsParameter = validate<BsParameter>({
     name: [isString()],
+    description: optional([isString()]),
+    type: [isString()],
+    default: [isString()],
+    required: [isBool()],
 });
 
 export const validateBsConfig = validate<BsConfig>({
