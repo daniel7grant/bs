@@ -2,7 +2,7 @@
 import findUp from 'find-up';
 import path from 'path';
 import { homedir } from 'os';
-import create from './commands/create';
+import generate from './commands/generate';
 import parseArguments from './modules/arguments';
 import { findTemplate, loadConfig } from './modules/config';
 
@@ -44,7 +44,7 @@ async function main() {
         process.exit(1);
     }
 
-    const createdFiles = await create(template, names as string[], params);
+    const createdFiles = await generate(template, names as string[], params);
     createdFiles.flat().forEach((file) => {
         process.stdout.write(`File "${file.path}" created.\n`);
     });

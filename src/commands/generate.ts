@@ -3,7 +3,7 @@ import { BsTemplate, BsFile, isFileWithContent } from '../types';
 import { renderFile } from '../modules/render';
 import { exists, subdirs } from '../modules/utils';
 
-export default async function create(
+export default async function generate(
     template: BsTemplate,
     names: string[],
     params: { [x: string]: unknown }
