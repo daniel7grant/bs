@@ -18,6 +18,7 @@ export const validateBsConfig = validate<BsConfig>({
     templates: arrayOf({
         name: [isString()],
         namespace: [isString()],
+		description: optional([isString()]),
         aliases: arrayOf([isString()]),
         files: arrayOf(validateBsFile),
         parameters: optional(arrayOf(validateBsParameter)),

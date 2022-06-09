@@ -4,7 +4,7 @@ import { findTemplate } from './config';
 import { BsConfig, BsParameter, BsTemplate } from '../types';
 
 const COMMANDS = {
-    CREATE: 'create',
+    GENERATE: ['generate', 'gen'],
     COMPLETION: 'completion',
 };
 
@@ -16,8 +16,8 @@ const OPTIONS = {
 function complete(config: BsConfig): yargs.AsyncCompletionFunction {
     return (current, argv) => {
         if (current.startsWith('-')) {
-            const optionCompletion = Object.values(OPTIONS);
-            if (argv._.length >= 3 && argv._[1] === COMMANDS.CREATE) {
+            const optionCompletion = Object.values(OPTIONS).flat();
+            if (argv._.length >= 3 && COMMANDS.GENERATE.includes(argv._[1])) {
                 const templateOptions = findTemplate(config.templates, argv._[2])?.parameters?.map(
                     (p) => `--${p.name}`
                 );
@@ -27,10 +27,11 @@ function complete(config: BsConfig): yargs.AsyncCompletionFunction {
         }
         switch (argv._.length) {
             case 2:
-                return Object.values(COMMANDS);
+                return Object.values(COMMANDS).flat();
             case 3:
                 switch (argv._[1]) {
-                    case COMMANDS.CREATE:
+                    case COMMANDS.GENERATE[0]:
+                    case COMMANDS.GENERATE[1]:
                         return config.templates.flatMap((template) =>
                             template.namespace
                                 ? [template.name, `${template.namespace}:${template.name}`]
@@ -90,18 +91,15 @@ export async function parseArguments(config: BsConfig): Promise<{
 }> {
     return yargs(hideBin(process.argv))
         .parserConfiguration({ 'dot-notation': false })
-        .usage('$0: bootstrap files quickly and efficiently.')
+        .usage('$0: bootstrap files quickly and efficiently')
         .example([
             [
-                `$0 ${COMMANDS.CREATE} react:component HelloWorld`,
-                `Generate files with ${COMMANDS.CREATE}`,
+                `$0 ${COMMANDS.GENERATE[1]} react:component HelloWorld`,
+                `Generate files from template`,
             ],
-            [
-                `$0 ${COMMANDS.COMPLETION}`,
-                'Generate tab completion for bash or zsh',
-            ],
+            [`source <($0 ${COMMANDS.COMPLETION})`, 'Generate tab completion for bash or zsh'],
         ])
-        .command(COMMANDS.CREATE, 'Generate new template.', (yargs) =>
+        .command(COMMANDS.GENERATE, 'Generate new template', (yargs) =>
             generateTemplateCommands(config.templates, yargs)
         )
         .completion(COMMANDS.COMPLETION, 'Generate tab completion bash and zsh', complete(config))
