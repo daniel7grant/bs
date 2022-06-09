@@ -32,11 +32,12 @@ function complete(config: BsConfig): yargs.AsyncCompletionFunction {
                 switch (argv._[1]) {
                     case COMMANDS.GENERATE[0]:
                     case COMMANDS.GENERATE[1]:
-                        return config.templates.flatMap((template) =>
-                            template.namespace
-                                ? [template.name, `${template.namespace}:${template.name}`]
-                                : [template.name]
-                        );
+                        return config.templates.flatMap((template) => {
+                            if (template.namespace) {
+                                return [template.name, `${template.namespace}:${template.name}`];
+                            }
+                            return [template.name];
+                        });
                     default:
                         return [];
                 }
@@ -46,45 +47,44 @@ function complete(config: BsConfig): yargs.AsyncCompletionFunction {
     };
 }
 
-function generateTemplateParameters(parameters: BsParameter[] = [], yargs: yargs.Argv): yargs.Argv {
-    let parameterYargs = yargs.positional('names', {
-        describe: 'the name or path to pass to the template',
-        type: 'string',
-        demandOption: true,
-        array: true,
-    });
-    for (const parameter of parameters) {
-        parameterYargs = parameterYargs.option(parameter.name, {
-            desc: parameter.description ?? '',
-            demandOption: parameter.required,
-            default: parameter.default,
-            type:
-                parameter.type === 'string'
-                    ? 'string'
-                    : parameter.type === 'number'
-                    ? 'number'
-                    : 'boolean',
+function generateTemplateParameters(parameters: BsParameter[] = []) {
+    return (y: yargs.Argv): yargs.Argv => {
+        const parameterYargs = y.positional('names', {
+            describe: 'the name or path to pass to the template',
+            type: 'string',
+            demandOption: true,
+            array: true,
         });
-    }
-    return parameterYargs;
+
+        return parameters.reduce(
+            (optionYargs, parameter) =>
+                optionYargs.option(parameter.name, {
+                    desc: parameter.description ?? '',
+                    demandOption: parameter.required,
+                    default: parameter.default,
+                    type: parameter.type as yargs.PositionalOptionsType,
+                }),
+            parameterYargs
+        );
+    };
 }
 
-function generateTemplateCommands(templates: BsTemplate[], yargs: yargs.Argv): yargs.Argv {
-    return templates
-        .reduce(
-            (templateYargs, template) =>
-                templateYargs.command(
-                    `${template.name} <names..>`,
-                    template.description ?? '',
-                    (subcommandYargs) =>
-                        generateTemplateParameters(template.parameters, subcommandYargs)
-                ),
-            yargs
-        )
-        .demandCommand(1, '');
+function generateTemplateCommands(templates: BsTemplate[]) {
+    return (y: yargs.Argv): yargs.Argv =>
+        templates
+            .reduce(
+                (templateYargs, template) =>
+                    templateYargs.command(
+                        `${template.name} <names..>`,
+                        template.description ?? '',
+                        generateTemplateParameters(template.parameters)
+                    ),
+                y
+            )
+            .demandCommand(1, '');
 }
 
-export async function parseArguments(config: BsConfig): Promise<{
+export default async function parseArguments(config: BsConfig): Promise<{
     [x: string]: unknown;
     _: (string | number)[];
     $0: string;
@@ -95,12 +95,14 @@ export async function parseArguments(config: BsConfig): Promise<{
         .example([
             [
                 `$0 ${COMMANDS.GENERATE[1]} react:component HelloWorld`,
-                `Generate files from template`,
+                'Generate files from template',
             ],
             [`source <($0 ${COMMANDS.COMPLETION})`, 'Generate tab completion for bash or zsh'],
         ])
-        .command(COMMANDS.GENERATE, 'Generate new template', (yargs) =>
-            generateTemplateCommands(config.templates, yargs)
+        .command(
+            COMMANDS.GENERATE,
+            'Generate new template',
+            generateTemplateCommands(config.templates)
         )
         .completion(COMMANDS.COMPLETION, 'Generate tab completion bash and zsh', complete(config))
         .showHelpOnFail(true)

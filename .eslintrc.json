@@ -1,0 +1,18 @@
+{
+    "extends": ["airbnb-base", "airbnb-typescript/base"],
+    "env": {
+        "node": true
+    },
+    "rules": {
+        "indent": "off",
+        "@typescript-eslint/indent": "off",
+        "comma-dangle": "off",
+        "@typescript-eslint/comma-dangle": "off",
+		"object-curly-newline": "off",
+		"implicit-arrow-linebreak": "off"
+    },
+    "plugins": ["import", "prettier"],
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    }
+}

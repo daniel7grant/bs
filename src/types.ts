@@ -11,10 +11,10 @@ export function isFileWithContent(file: BsFile): file is BsFileWithContent {
 
 export interface BsParameter {
     name: string;
-	description?: string;
+    description?: string;
     type: string;
-	default: string;
-	required: boolean;
+    default: string;
+    required: boolean;
 }
 
 export interface BsTemplate {

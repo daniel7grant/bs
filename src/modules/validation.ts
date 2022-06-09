@@ -14,11 +14,11 @@ const validateBsParameter = validate<BsParameter>({
     required: [isBool()],
 });
 
-export const validateBsConfig = validate<BsConfig>({
+export default validate<BsConfig>({
     templates: arrayOf({
         name: [isString()],
         namespace: [isString()],
-		description: optional([isString()]),
+        description: optional([isString()]),
         aliases: arrayOf([isString()]),
         files: arrayOf(validateBsFile),
         parameters: optional(arrayOf(validateBsParameter)),

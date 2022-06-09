@@ -3,7 +3,7 @@ import { BsTemplate, BsFile, isFileWithContent } from '../types';
 import { renderFile } from '../modules/render';
 import { exists, subdirs } from '../modules/utils';
 
-export async function create(
+export default async function create(
     template: BsTemplate,
     names: string[],
     params: { [x: string]: unknown }
@@ -14,22 +14,17 @@ export async function create(
 
     const existingFiles = await Promise.all(renderedFiles.map((f) => f.path).map(exists));
     if (existingFiles.some((f) => f === true)) {
-        console.warn(`Files already exist, add --force to overwrite.`);
+        process.stderr.write('Files already exist, add --force to overwrite.\n');
         process.exit(0);
     }
 
-    const dirsToCreate = renderedFiles
-        .map((f) => subdirs(f.path))
-        .reduce(
-            (set, dirs) => dirs.reduce((set, dir) => (dir ? set.add(dir) : set), set),
-            new Set<string>()
-        );
+    const dirsToCreate = new Set(renderedFiles.flatMap((f) => subdirs(f.path)).filter(Boolean));
     await Array.from(dirsToCreate).reduce(
         (previousPromise, dir) =>
             previousPromise.then(async () => {
                 if (!(await exists(dir))) {
-                    console.log(`Directory "${dir}" created.`);
-                    return mkdir(dir);
+                    process.stdout.write(`Directory "${dir}" created.\n`);
+                    await mkdir(dir);
                 }
             }),
         Promise.resolve()
