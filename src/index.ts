@@ -2,7 +2,7 @@
 import path from 'path';
 import { homedir } from 'os';
 import { create } from './commands/create';
-import { parseArguments, parseConfiguration } from './modules/arguments';
+import { parseArguments } from './modules/arguments';
 import { findTemplate, loadConfig } from './modules/config';
 import { firstExists } from './modules/utils';
 
@@ -14,8 +14,7 @@ const configurationPaths = [
 ];
 
 async function main() {
-    const { configuration } = await parseConfiguration();
-    const configFile = await firstExists(configuration ? [configuration] : configurationPaths);
+    const configFile = await firstExists(configurationPaths);
 
     if (!configFile) {
         console.error(
@@ -28,6 +27,9 @@ async function main() {
     const args = await parseArguments(config);
 
     if (!args.names) {
+        console.error(
+            `You have to define one or more names to generate files with.`
+        );
         process.exit(1);
     }
 
