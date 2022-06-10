@@ -8,8 +8,9 @@
         "@typescript-eslint/indent": "off",
         "comma-dangle": "off",
         "@typescript-eslint/comma-dangle": "off",
-		"object-curly-newline": "off",
-		"implicit-arrow-linebreak": "off"
+        "object-curly-newline": "off",
+        "implicit-arrow-linebreak": "off",
+        "operator-linebreak": "off"
     },
     "plugins": ["import", "prettier"],
     "parserOptions": {

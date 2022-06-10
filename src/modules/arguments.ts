@@ -3,7 +3,7 @@ import { hideBin } from 'yargs/helpers';
 import { findTemplate } from './config';
 import { BsConfig, BsParameter, BsTemplate } from '../types';
 
-const COMMANDS = {
+export const COMMANDS = {
     GENERATE: ['generate', 'gen'],
     COMPLETION: 'completion',
 };
@@ -13,12 +13,12 @@ const OPTIONS = {
     VERSION: '--version',
 };
 
-function complete(config: BsConfig): yargs.AsyncCompletionFunction {
+function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
     return (current, argv) => {
         if (current.startsWith('-')) {
             const optionCompletion = Object.values(OPTIONS).flat();
             if (argv._.length >= 3 && COMMANDS.GENERATE.includes(argv._[1])) {
-                const templateOptions = findTemplate(config.templates, argv._[2])?.parameters?.map(
+                const templateOptions = findTemplate(templates, argv._[2])?.parameters?.map(
                     (p) => `--${p.name}`
                 );
                 return templateOptions;
@@ -32,7 +32,7 @@ function complete(config: BsConfig): yargs.AsyncCompletionFunction {
                 switch (argv._[1]) {
                     case COMMANDS.GENERATE[0]:
                     case COMMANDS.GENERATE[1]:
-                        return config.templates.flatMap((template) => {
+                        return templates.flatMap((template) => {
                             if (template.namespace) {
                                 return [template.name, `${template.namespace}:${template.name}`];
                             }
@@ -69,7 +69,7 @@ function generateTemplateParameters(parameters: BsParameter[] = []) {
     };
 }
 
-function generateTemplateCommands(templates: BsTemplate[]) {
+function generateTemplateCommands(templates: BsTemplate[] = []) {
     return (y: yargs.Argv): yargs.Argv =>
         templates
             .reduce(
@@ -84,7 +84,7 @@ function generateTemplateCommands(templates: BsTemplate[]) {
             .demandCommand(1, '');
 }
 
-export default async function parseArguments(config: BsConfig): Promise<{
+export default async function parseArguments(config: BsConfig | undefined): Promise<{
     [x: string]: unknown;
     _: (string | number)[];
     $0: string;
@@ -101,10 +101,14 @@ export default async function parseArguments(config: BsConfig): Promise<{
         ])
         .command(
             COMMANDS.GENERATE,
-            'Generate new template',
-            generateTemplateCommands(config.templates)
+            'Generate files from template',
+            generateTemplateCommands(config?.templates)
         )
-        .completion(COMMANDS.COMPLETION, 'Generate tab completion bash and zsh', complete(config))
+        .completion(
+            COMMANDS.COMPLETION,
+            'Generate tab completion bash and zsh',
+            complete(config?.templates)
+        )
         .showHelpOnFail(true)
         .recommendCommands()
         .demandCommand(1, '')
