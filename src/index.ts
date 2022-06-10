@@ -1,4 +1,5 @@
 #!/usr/bin/node
+import create from './commands/create';
 import generate from './commands/generate';
 import parseArguments, { COMMANDS } from './modules/arguments';
 import { loadConfig } from './modules/config';
@@ -17,6 +18,8 @@ async function main() {
         case COMMANDS.GENERATE[0]:
         case COMMANDS.GENERATE[1]:
             return generate(config, positionals as string[], params);
+        case COMMANDS.CREATE:
+            return create(config, positionals as string[], params);
         default:
             throw new Error(`Command ${command} not found.\n`);
     }

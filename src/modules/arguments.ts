@@ -4,6 +4,7 @@ import { findTemplate } from './config';
 import { BsConfig, BsParameter, BsTemplate } from '../types';
 
 export const COMMANDS = {
+    CREATE: 'create',
     GENERATE: ['generate', 'gen'],
     COMPLETION: 'completion',
 };
@@ -13,15 +14,24 @@ const OPTIONS = {
     VERSION: '--version',
 };
 
+const CREATE_OPTIONS = { FROM_FILE: '--from-file' };
+
 function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
     return (current, argv) => {
         if (current.startsWith('-')) {
-            const optionCompletion = Object.values(OPTIONS).flat();
-            if (argv._.length >= 3 && COMMANDS.GENERATE.includes(argv._[1])) {
-                const templateOptions = findTemplate(templates, argv._[2])?.parameters?.map(
-                    (p) => `--${p.name}`
-                );
-                return templateOptions;
+            const optionCompletion = Object.values(OPTIONS);
+            if (argv._.length >= 3) {
+                switch (argv._[1]) {
+                    case COMMANDS.GENERATE[0]:
+                    case COMMANDS.GENERATE[1]:
+                        return findTemplate(templates, argv._[2])?.parameters?.map(
+                            (p) => `--${p.name}`
+                        );
+                    case COMMANDS.CREATE:
+                        return Object.values(CREATE_OPTIONS);
+                    default:
+                        return [];
+                }
             }
             return optionCompletion;
         }
@@ -103,6 +113,22 @@ export default async function parseArguments(config: BsConfig | undefined): Prom
             COMMANDS.GENERATE,
             'Generate files from template',
             generateTemplateCommands(config?.templates)
+        )
+        .completion(
+            COMMANDS.COMPLETION,
+            'Generate tab completion bash and zsh',
+            complete(config?.templates)
+        )
+        .command(COMMANDS.CREATE, 'Create new template', (y) =>
+            y
+                .positional('name', {
+                    describe: 'the name of the new template',
+                    type: 'string',
+                    demandOption: true,
+                })
+                .option(CREATE_OPTIONS.FROM_FILE, {
+                    type: 'string',
+                })
         )
         .completion(
             COMMANDS.COMPLETION,
