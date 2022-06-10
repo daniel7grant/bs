@@ -22,4 +22,4 @@ async function main() {
     }
 }
 
-main().catch((err) => process.stderr.write(err));
+main().catch((err) => process.stderr.write(err.message));

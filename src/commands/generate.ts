@@ -15,7 +15,8 @@ export default async function generate(
 
     const template = findTemplate(config.templates, `${templateName}`);
     if (!template) {
-        throw new Error(`Template "${templateName}" not found in ${getConfigFile()}.\n`);
+        const configFile = await getConfigFile();
+        throw new Error(`Template "${templateName}" not found in ${configFile}.\n`);
     }
 
     const { names } = params as { names: string[] };
