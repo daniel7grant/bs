@@ -1,6 +1,14 @@
 import { constants } from 'fs';
 import { access } from 'fs/promises';
+import { files } from 'node-dir';
 import path from 'path';
+import { promisify } from 'util';
+
+export const getFilesRecursively: (dir: string) => Promise<string[]> = promisify(files);
+
+export function escapeForRegExp(str: string): RegExp {
+    return new RegExp(str.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&'), 'g');
+}
 
 export async function exists(filename: string): Promise<boolean> {
     return access(filename, constants.F_OK).then(

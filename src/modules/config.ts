@@ -1,6 +1,6 @@
 import findUp from 'find-up';
-import { readFile } from 'fs/promises';
-import { load } from 'js-yaml';
+import { readFile, writeFile } from 'fs/promises';
+import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import path from 'path';
 import { BsConfig, BsTemplate } from '../types';
@@ -21,6 +21,12 @@ export function findTemplate(templates: BsTemplate[], name: string): BsTemplate 
     );
 }
 
+export function initConfig(): BsConfig {
+    return {
+        templates: [],
+    };
+}
+
 export async function getConfigFile(): Promise<string | undefined> {
     const filename = await findUp(configurationPaths);
     return filename;
@@ -36,6 +42,16 @@ export async function loadConfig(): Promise<BsConfig | undefined> {
         const config = await validateBsConfig(load(content));
         return config;
     } catch (error: any) {
-        throw new Error(`Loading config "${filename}" failed: ${error}\n`);
+        throw new Error(`Loading config "${filename}" failed: ${error.message}\n`);
+    }
+}
+
+export async function saveConfig(config: BsConfig): Promise<string> {
+    const filename = (await getConfigFile()) ?? configurationPaths[0];
+    try {
+        await writeFile(filename, dump(config), 'utf8');
+        return filename;
+    } catch (error: any) {
+        throw new Error(`Saving config "${filename}" failed: ${error.message}\n`);
     }
 }

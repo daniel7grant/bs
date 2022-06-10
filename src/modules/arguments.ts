@@ -14,7 +14,7 @@ const OPTIONS = {
     VERSION: '--version',
 };
 
-const CREATE_OPTIONS = { FROM_FILE: '--from-file' };
+export const CREATE_OPTIONS = { FROM_FILE: '--from-file' };
 
 function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
     return (current, argv) => {
