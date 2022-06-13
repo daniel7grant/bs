@@ -16,7 +16,7 @@ import {
 function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
     return (current, argv) => {
         if (current.startsWith('-')) {
-            const optionCompletion = Object.values(OPTIONS).map((p) => `--${p}`);
+            const optionCompletion = OPTIONS.map((p) => `--${p}`);
             if (argv._.length >= 3) {
                 switch (argv._[1]) {
                     case COMMANDS.GENERATE[0]:
@@ -25,7 +25,7 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
                             (p) => `--${p.name}`
                         );
                     case COMMANDS.CREATE:
-                        return Object.values(COMMAND_OPTIONS.CREATE).map((p) => `--${p}`);
+                        return COMMAND_OPTIONS.CREATE.map((p) => `--${p}`);
                     default:
                         return [];
                 }

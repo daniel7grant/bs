@@ -86,7 +86,9 @@ export default async function create(
         );
     } else {
         throw new Error(
-            `You have to pass --${COMMAND_OPTIONS.CREATE.FROM_FILE} to read from a file or directory.\n`
+            `You have to pass ${COMMAND_OPTIONS.CREATE.map((p) => `--${p}`).join(
+                ', '
+            )} to read from a file or directory.\n`
         );
     }
 }
