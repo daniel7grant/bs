@@ -1,10 +1,9 @@
 import { lstat, readFile } from 'fs/promises';
 import path from 'path';
-import { BsConfig, BsTemplate } from 'types';
-import { CREATE_OPTIONS } from '../modules/arguments';
 import { findTemplate, initConfig, saveConfig } from '../modules/config';
 import { unrenderFile } from '../modules/render';
 import { exists, getFilesRecursively } from '../modules/utils';
+import { BsConfig, BsTemplate, CreateArguments, COMMAND_OPTIONS } from '../types';
 
 async function createTemplateFromFiles(
     templateName: string,
@@ -29,15 +28,19 @@ async function createTemplateFromFiles(
 
 export default async function create(
     config: BsConfig | undefined,
-    _: string[],
-    params: { [key: string]: unknown }
+    _: (number | string)[],
+    params: CreateArguments
 ) {
-    if (typeof params.fromFile === 'string') {
-        if (!(await exists(params.fromFile))) {
-            throw new Error(`File ${params.fromFile} does not exist.\n`);
+    const {
+        'from-file': fromFile,
+        'disable-parameters': disableParameters,
+        name: templateName,
+    } = params;
+    if (fromFile) {
+        if (!(await exists(fromFile))) {
+            throw new Error(`File ${fromFile} does not exist.\n`);
         }
 
-        const templateName = params.name as string;
         if (!templateName.includes(':')) {
             throw new Error(
                 'Component name have to contain the namespace (e.g. react:component).\n'
@@ -51,24 +54,24 @@ export default async function create(
             );
         }
 
-        const stat = await lstat(params.fromFile);
+        const stat = await lstat(fromFile);
         let template: BsTemplate | undefined;
-        const { name } = path.parse(params.fromFile);
+        const { name } = path.parse(fromFile);
         if (stat.isFile()) {
             template = await createTemplateFromFiles(
                 templateName,
-                [params.fromFile],
-                !params.disableParameters ? name : undefined
+                [fromFile],
+                !disableParameters ? name : undefined
             );
         } else if (stat.isDirectory()) {
-            const files = await getFilesRecursively(params.fromFile);
+            const files = await getFilesRecursively(fromFile);
             template = await createTemplateFromFiles(
                 templateName,
                 files,
-                !params.disableParameters ? name : undefined
+                !disableParameters ? name : undefined
             );
         } else {
-            throw new Error(`Param ${params.fromFile} should be a file or a directory.\n`);
+            throw new Error(`Param ${fromFile} should be a file or a directory.\n`);
         }
 
         const updatedConfig = config ?? initConfig();
@@ -83,7 +86,7 @@ export default async function create(
         );
     } else {
         throw new Error(
-            `You have to pass ${CREATE_OPTIONS.FROM_FILE} to read from a file or directory.\n`
+            `You have to pass --${COMMAND_OPTIONS.CREATE.FROM_FILE} to read from a file or directory.\n`
         );
     }
 }

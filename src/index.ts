@@ -1,28 +1,22 @@
 #!/usr/bin/node
 import create from './commands/create';
 import generate from './commands/generate';
-import parseArguments, { COMMANDS } from './modules/arguments';
+import parseArguments from './modules/arguments';
 import { loadConfig } from './modules/config';
+import { isCreateCommand, isGenerateCommand } from './types';
 
 async function main() {
     const config = await loadConfig();
     const args = await parseArguments(config);
 
-    const {
-        $0,
-        _: [command, ...positionals],
-        ...params
-    } = args;
-
-    switch (command) {
-        case COMMANDS.GENERATE[0]:
-        case COMMANDS.GENERATE[1]:
-            return generate(config, positionals as string[], params);
-        case COMMANDS.CREATE:
-            return create(config, positionals as string[], params);
-        default:
-            throw new Error(`Command ${command} not found.\n`);
+    if (isCreateCommand(args)) {
+        return create(config, args._, args);
     }
+    if (isGenerateCommand(args)) {
+        return generate(config, args._, args);
+    }
+
+    throw new Error('Command not found.\n');
 }
 
 main().catch((err) => process.stderr.write(err.message));

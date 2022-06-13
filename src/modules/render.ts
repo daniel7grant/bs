@@ -18,7 +18,7 @@ export async function renderFile(file: BsFile, params: Record<string, any>): Pro
 
 export async function unrenderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
     if (isFileWithContent(file)) {
-        const nameRegexp = escapeForRegExp(params.name as string);
+        const nameRegexp = escapeForRegExp(params.name);
 
         return {
             path: file.path.replace(nameRegexp, '{{ name }}'),

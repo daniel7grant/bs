@@ -2,12 +2,12 @@ import { mkdir, writeFile } from 'fs/promises';
 import { findTemplate, getConfigFile } from '../modules/config';
 import { renderFile } from '../modules/render';
 import { exists, subdirs } from '../modules/utils';
-import { BsConfig, isFileWithContent } from '../types';
+import { BsConfig, GenerateArguments, isFileWithContent } from '../types';
 
 export default async function generate(
     config: BsConfig | undefined,
-    [templateName]: string[],
-    params: { [x: string]: unknown }
+    [, templateName]: (number | string)[],
+    params: GenerateArguments
 ): Promise<void> {
     if (!config) {
         throw new Error('Config file not found. Create one in the local or homedir.\n');
@@ -19,7 +19,7 @@ export default async function generate(
         throw new Error(`Template "${templateName}" not found in ${configFile}.\n`);
     }
 
-    const { names } = params as { names: string[] };
+    const { names } = params;
     const renderedFiles = await Promise.all(
         names.flatMap((name) => template.files.map((f) => renderFile(f, { name, ...params })))
     );

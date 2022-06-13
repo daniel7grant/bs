@@ -1,29 +1,22 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { findTemplate } from './config';
-import { BsConfig, BsParameter, BsTemplate } from '../types';
-
-export const COMMANDS = {
-    CREATE: 'create',
-    GENERATE: ['generate', 'gen'],
-    COMPLETION: 'completion',
-};
-
-const OPTIONS = {
-    HELP: '--help',
-    VERSION: '--version',
-};
-
-export const CREATE_OPTIONS = {
-    FROM_FILE: 'from-file',
-    FORCE: 'force',
-    DISABLE_PARAMETERS: 'disable-parameters',
-};
+import {
+    COMMANDS,
+    OPTIONS,
+    COMMAND_OPTIONS,
+    BsArguments,
+    BsConfig,
+    BsParameter,
+    BsTemplate,
+    CreateArguments,
+    GenerateArguments,
+} from '../types';
 
 function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
     return (current, argv) => {
         if (current.startsWith('-')) {
-            const optionCompletion = Object.values(OPTIONS);
+            const optionCompletion = Object.values(OPTIONS).map((p) => `--${p}`);
             if (argv._.length >= 3) {
                 switch (argv._[1]) {
                     case COMMANDS.GENERATE[0]:
@@ -32,7 +25,7 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
                             (p) => `--${p.name}`
                         );
                     case COMMANDS.CREATE:
-                        return Object.values(CREATE_OPTIONS).map((p) => `--${p}`);
+                        return Object.values(COMMAND_OPTIONS.CREATE).map((p) => `--${p}`);
                     default:
                         return [];
                 }
@@ -62,7 +55,7 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
 }
 
 function generateTemplateParameters(parameters: BsParameter[] = []) {
-    return (y: yargs.Argv): yargs.Argv => {
+    return (y: yargs.Argv): yargs.Argv<GenerateArguments> => {
         const parameterYargs = y.positional('names', {
             describe: 'the name or path to pass to the template',
             type: 'string',
@@ -84,7 +77,7 @@ function generateTemplateParameters(parameters: BsParameter[] = []) {
 }
 
 function generateTemplateCommands(templates: BsTemplate[] = []) {
-    return (y: yargs.Argv): yargs.Argv =>
+    return (y: yargs.Argv): yargs.Argv<GenerateArguments> =>
         templates
             .reduce(
                 (templateYargs, template) =>
@@ -93,16 +86,36 @@ function generateTemplateCommands(templates: BsTemplate[] = []) {
                         template.description ?? '',
                         generateTemplateParameters(template.parameters)
                     ),
-                y
+                y as yargs.Argv<GenerateArguments>
             )
             .demandCommand(1, '');
 }
 
-export default async function parseArguments(config: BsConfig | undefined): Promise<{
-    [x: string]: unknown;
-    _: (string | number)[];
-    $0: string;
-}> {
+function createTemplateCommands() {
+    return (y: yargs.Argv): yargs.Argv<CreateArguments> =>
+        y
+            .positional('name', {
+                describe: 'The name of the new template',
+                type: 'string',
+                demandOption: true,
+            })
+            .option('from-file', {
+                describe: 'The name of the new template',
+                type: 'string',
+            })
+            .option('force', {
+                describe: 'Whether it should overwrite existing template',
+                type: 'boolean',
+                default: false,
+            })
+            .option('disable-parameters', {
+                describe: 'Whether it must not guess to replace template parts',
+                type: 'boolean',
+                default: false,
+            });
+}
+
+export default async function parseArguments(config: BsConfig | undefined): Promise<BsArguments> {
     return yargs(hideBin(process.argv))
         .parserConfiguration({ 'dot-notation': false })
         .usage('$0: bootstrap files quickly and efficiently')
@@ -113,37 +126,11 @@ export default async function parseArguments(config: BsConfig | undefined): Prom
             ],
             [`source <($0 ${COMMANDS.COMPLETION})`, 'Generate tab completion for bash or zsh'],
         ])
+        .command(`${COMMANDS.CREATE} <name>`, 'Create new template', createTemplateCommands())
         .command(
             COMMANDS.GENERATE,
             'Generate files from template',
             generateTemplateCommands(config?.templates)
-        )
-        .completion(
-            COMMANDS.COMPLETION,
-            'Generate tab completion bash and zsh',
-            complete(config?.templates)
-        )
-        .command(`${COMMANDS.CREATE} <name>`, 'Create new template', (y) =>
-            y
-                .positional('name', {
-                    describe: 'The name of the new template',
-                    type: 'string',
-                    demandOption: true,
-                })
-                .option(CREATE_OPTIONS.FROM_FILE, {
-                    describe: 'The name of the new template',
-                    type: 'string',
-                })
-                .option(CREATE_OPTIONS.FORCE, {
-                    describe: 'Whether it should overwrite existing template',
-                    type: 'boolean',
-                    default: false,
-                })
-                .option(CREATE_OPTIONS.DISABLE_PARAMETERS, {
-                    describe: 'Whether it must not guess to replace template parts',
-                    type: 'boolean',
-                    default: false,
-                })
         )
         .completion(
             COMMANDS.COMPLETION,
