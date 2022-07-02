@@ -7,7 +7,7 @@ import { BsConfig, GenerateArguments, isFileWithContent } from '../types';
 export default async function generate(
     config: BsConfig | undefined,
     [, templateName]: (number | string)[],
-    params: GenerateArguments
+    { names, force, _, ...params }: GenerateArguments
 ): Promise<void> {
     if (!config) {
         throw new Error('Config file not found. Create one in the local or homedir.\n');
@@ -19,13 +19,12 @@ export default async function generate(
         throw new Error(`Template "${templateName}" not found in ${configFile}.\n`);
     }
 
-    const { names } = params;
     const renderedFiles = await Promise.all(
         names.flatMap((name) => template.files.map((f) => renderFile(f, { name, ...params })))
     );
 
     const existingFiles = await Promise.all(renderedFiles.map((f) => f.path).map(exists));
-    if (existingFiles.some((f) => f === true)) {
+    if (!force && existingFiles.some((f) => f === true)) {
         throw new Error('Files already exist, add --force to overwrite.\n');
     }
 

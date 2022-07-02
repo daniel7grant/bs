@@ -21,9 +21,12 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
                 switch (argv._[1]) {
                     case COMMANDS.GENERATE[0]:
                     case COMMANDS.GENERATE[1]:
-                        return findTemplate(templates, argv._[2])?.parameters?.map(
-                            (p) => `--${p.name}`
-                        );
+                        return [
+                            ...(findTemplate(templates, argv._[2])?.parameters?.map(
+                                (p) => p.name
+                            ) ?? []),
+                            ...COMMAND_OPTIONS.GENERATE,
+                        ].map((p) => `--${p}`);
                     case COMMANDS.CREATE:
                         return COMMAND_OPTIONS.CREATE.map((p) => `--${p}`);
                     default:
@@ -56,12 +59,17 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
 
 function generateTemplateParameters(parameters: BsParameter[] = []) {
     return (y: yargs.Argv): yargs.Argv<GenerateArguments> => {
-        const parameterYargs = y.positional('names', {
-            describe: 'the name or path to pass to the template',
-            type: 'string',
-            demandOption: true,
-            array: true,
-        });
+        const parameterYargs = y
+            .positional('names', {
+                describe: 'the name or path to pass to the template',
+                type: 'string',
+                demandOption: true,
+                array: true,
+            })
+            .option('force', {
+                type: 'boolean',
+                default: false,
+            });
 
         return parameters.reduce(
             (optionYargs, parameter) =>

@@ -44,6 +44,7 @@ export interface CreateArguments extends BaseArguments {
 
 export interface GenerateArguments extends BaseArguments {
     names: string[];
+    force: boolean;
     [k: string]: unknown;
 }
 
@@ -62,7 +63,7 @@ export const COMMAND_OPTIONS: {
     GENERATE: (keyof GenerateArguments)[];
 } = {
     CREATE: ['from-file', 'force', 'disable-parameters', 'name'],
-    GENERATE: [],
+    GENERATE: ['force'],
 };
 
 export function isCreateCommand(args: BsArguments): args is CreateArguments {
