@@ -1,6 +1,16 @@
-import { compile } from 'handlebars';
+import Handlebars from 'handlebars';
 import { BsFile, isFileWithContent } from '../types';
-import { convertNameToPath, escapeForRegExp } from './utils';
+import { capitalize, convertNameToPath, convertToCase, replaceWithCases } from './utils';
+
+Handlebars.registerHelper('lower', (str: string) => str.toLocaleLowerCase());
+Handlebars.registerHelper('upper', (str: string) => str.toLocaleUpperCase());
+Handlebars.registerHelper('capitalize', (str: string) => capitalize(str));
+Handlebars.registerHelper('camel', (str: string) => convertToCase(str, 'camel'));
+Handlebars.registerHelper('pascal', (str: string) => convertToCase(str, 'pascal'));
+Handlebars.registerHelper('snake', (str: string) => convertToCase(str, 'snake'));
+Handlebars.registerHelper('constant', (str: string) => convertToCase(str, 'constant'));
+Handlebars.registerHelper('kebab', (str: string) => convertToCase(str, 'kebab'));
+Handlebars.registerHelper('words', (str: string) => convertToCase(str, 'words'));
 
 export async function renderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
     if (isFileWithContent(file)) {
@@ -8,8 +18,8 @@ export async function renderFile(file: BsFile, params: Record<string, any>): Pro
 
         return {
             // TODO: add helper functions
-            path: compile(path)({ ...params, name }),
-            content: compile(file.content)({ ...params, name }),
+            path: Handlebars.compile(path)({ ...params, name }),
+            content: Handlebars.compile(file.content)({ ...params, name }),
         };
     }
 
@@ -18,11 +28,9 @@ export async function renderFile(file: BsFile, params: Record<string, any>): Pro
 
 export async function unrenderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
     if (isFileWithContent(file)) {
-        const nameRegexp = escapeForRegExp(params.name);
-
         return {
-            path: file.path.replace(nameRegexp, '{{ name }}'),
-            content: file.content.replace(nameRegexp, '{{ name }}'),
+            path: replaceWithCases(file.path, params.name),
+            content: replaceWithCases(file.content, params.name),
         };
     }
 
