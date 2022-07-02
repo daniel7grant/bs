@@ -34,7 +34,8 @@ export default async function create(
     const {
         'from-file': fromFile,
         'disable-parameters': disableParameters,
-        name: templateName,
+        template: templateName,
+        name,
     } = params;
     if (fromFile) {
         if (!(await exists(fromFile))) {
@@ -56,19 +57,19 @@ export default async function create(
 
         const stat = await lstat(fromFile);
         let template: BsTemplate | undefined;
-        const { name } = path.parse(fromFile);
+        const parsedName = name ?? path.parse(fromFile).name;
         if (stat.isFile()) {
             template = await createTemplateFromFiles(
                 templateName,
                 [fromFile],
-                !disableParameters ? name : undefined
+                !disableParameters ? parsedName : undefined
             );
         } else if (stat.isDirectory()) {
             const files = await getFilesRecursively(fromFile);
             template = await createTemplateFromFiles(
                 templateName,
                 files,
-                !disableParameters ? name : undefined
+                !disableParameters ? parsedName : undefined
             );
         } else {
             throw new Error(`Param ${fromFile} should be a file or a directory.\n`);

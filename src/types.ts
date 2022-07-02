@@ -35,7 +35,8 @@ export interface BaseArguments {
 }
 
 export interface CreateArguments extends BaseArguments {
-    name: string;
+    template: string;
+    name: string | undefined;
     'from-file': string | undefined;
     force: boolean;
     'disable-parameters': boolean;
@@ -60,7 +61,7 @@ export const COMMAND_OPTIONS: {
     CREATE: (keyof CreateArguments)[];
     GENERATE: (keyof GenerateArguments)[];
 } = {
-    CREATE: ['from-file', 'force', 'disable-parameters'],
+    CREATE: ['from-file', 'force', 'disable-parameters', 'name'],
     GENERATE: [],
 };
 

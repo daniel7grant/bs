@@ -17,7 +17,6 @@ export async function renderFile(file: BsFile, params: Record<string, any>): Pro
         const { name, path } = convertNameToPath(params.name, file.path);
 
         return {
-            // TODO: add helper functions
             path: Handlebars.compile(path)({ ...params, name }),
             content: Handlebars.compile(file.content)({ ...params, name }),
         };

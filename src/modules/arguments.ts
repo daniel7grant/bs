@@ -94,13 +94,17 @@ function generateTemplateCommands(templates: BsTemplate[] = []) {
 function createTemplateCommands() {
     return (y: yargs.Argv): yargs.Argv<CreateArguments> =>
         y
-            .positional('name', {
+            .positional('template', {
                 describe: 'The name of the new template',
                 type: 'string',
                 demandOption: true,
             })
             .option('from-file', {
-                describe: 'The name of the new template',
+                describe: 'The file or directory to create the template from',
+                type: 'string',
+            })
+            .option('name', {
+                describe: 'The name to be used as the parameter for the template',
                 type: 'string',
             })
             .option('force', {
@@ -126,7 +130,7 @@ export default async function parseArguments(config: BsConfig | undefined): Prom
             ],
             [`source <($0 ${COMMANDS.COMPLETION})`, 'Generate tab completion for bash or zsh'],
         ])
-        .command(`${COMMANDS.CREATE} <name>`, 'Create new template', createTemplateCommands())
+        .command(`${COMMANDS.CREATE} <template>`, 'Create new template', createTemplateCommands())
         .command(
             COMMANDS.GENERATE,
             'Generate files from template',
