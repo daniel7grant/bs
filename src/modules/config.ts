@@ -13,14 +13,6 @@ const configurationPaths = [
     path.join(homedir(), '.bsconfig.yml'),
 ];
 
-export function findTemplate(templates: BsTemplate[], name: string): BsTemplate | undefined {
-    return (
-        templates.find((t) => `${t.namespace}:${t.name}` === name) ||
-        templates.find((t) => t.name === name) ||
-        templates.find((t) => t.aliases.includes(name))
-    );
-}
-
 export function generateTemplateFullname(template: BsTemplate): string {
     return `${template.namespace}:${template.name}`;
 }
@@ -31,6 +23,14 @@ export function generateTemplateNames(template?: BsTemplate): string[] {
 
 export function generateTemplateParamNames(template?: BsTemplate): string[] {
     return template?.parameters?.map((p) => p.name) ?? [];
+}
+
+export function findTemplate(templates: BsTemplate[], name: string): BsTemplate | undefined {
+    return (
+        templates.find((t) => generateTemplateFullname(t) === name) ??
+        templates.find((t) => t.name === name) ??
+        templates.find((t) => t.aliases.includes(name))
+    );
 }
 
 export function initConfig(): BsConfig {

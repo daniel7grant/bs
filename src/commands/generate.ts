@@ -33,8 +33,8 @@ export default async function generate(
         (previousPromise, dir) =>
             previousPromise.then(async () => {
                 if (!(await exists(dir))) {
-                    process.stdout.write(`Directory "${dir}" created.\n`);
                     await mkdir(dir);
+                    process.stdout.write(`Directory "${dir}" created.\n`);
                 }
             }),
         Promise.resolve()

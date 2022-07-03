@@ -1,6 +1,6 @@
 import { lstat, readFile } from 'fs/promises';
 import path from 'path';
-import { findTemplate, initConfig, saveConfig } from '../modules/config';
+import { findTemplate, generateTemplateFullname, initConfig, saveConfig } from '../modules/config';
 import { unrenderFile } from '../modules/render';
 import { exists, getFilesRecursively } from '../modules/utils';
 import { BsConfig, BsTemplate, CreateArguments, COMMAND_OPTIONS } from '../types';
@@ -77,7 +77,7 @@ export default async function create(
 
         const updatedConfig = config ?? initConfig();
         updatedConfig.templates = updatedConfig.templates
-            .filter((t) => `${t.namespace}:${t.name}` !== templateName)
+            .filter((t) => generateTemplateFullname(t) !== templateName)
             .concat(template);
         const filename = await saveConfig(updatedConfig);
         process.stdout.write(
