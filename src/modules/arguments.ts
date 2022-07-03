@@ -1,6 +1,12 @@
+import { sortBy } from 'ramda';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { findTemplate } from './config';
+import {
+    findTemplate,
+    generateTemplateFullname,
+    generateTemplateNames,
+    generateTemplateParamNames,
+} from './config';
 import {
     COMMANDS,
     OPTIONS,
@@ -22,9 +28,7 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
                     case COMMANDS.GENERATE[0]:
                     case COMMANDS.GENERATE[1]:
                         return [
-                            ...(findTemplate(templates, argv._[2])?.parameters?.map(
-                                (p) => p.name
-                            ) ?? []),
+                            ...generateTemplateParamNames(findTemplate(templates, argv._[2])),
                             ...COMMAND_OPTIONS.GENERATE,
                         ].map((p) => `--${p}`);
                     case COMMANDS.CREATE:
@@ -44,7 +48,7 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
                     case COMMANDS.GENERATE[1]:
                         return templates.flatMap((template) => {
                             if (template.namespace) {
-                                return [template.name, `${template.namespace}:${template.name}`];
+                                return generateTemplateNames(template);
                             }
                             return [template.name];
                         });
@@ -69,7 +73,11 @@ function generateTemplateParameters(parameters: BsParameter[] = []) {
             .option('force', {
                 type: 'boolean',
                 default: false,
-            });
+            })
+            .group(
+                parameters.map((param) => param.name),
+                'Template options:'
+            );
 
         return parameters.reduce(
             (optionYargs, parameter) =>
@@ -85,18 +93,20 @@ function generateTemplateParameters(parameters: BsParameter[] = []) {
 }
 
 function generateTemplateCommands(templates: BsTemplate[] = []) {
-    return (y: yargs.Argv): yargs.Argv<GenerateArguments> =>
-        templates
+    return (y: yargs.Argv): yargs.Argv<GenerateArguments> => {
+        const sortedTemplates = sortBy(generateTemplateFullname, templates);
+        return sortedTemplates
             .reduce(
                 (templateYargs, template) =>
                     templateYargs.command(
-                        `${template.name} <names..>`,
+                        generateTemplateNames(template).map((name) => `${name} <names..>`),
                         template.description ?? '',
                         generateTemplateParameters(template.parameters)
                     ),
                 y as yargs.Argv<GenerateArguments>
             )
             .demandCommand(1, '');
+    };
 }
 
 function createTemplateCommands() {
@@ -129,7 +139,6 @@ function createTemplateCommands() {
 
 export default async function parseArguments(config: BsConfig | undefined): Promise<BsArguments> {
     return yargs(hideBin(process.argv))
-        .parserConfiguration({ 'dot-notation': false })
         .usage('$0: bootstrap files quickly and efficiently')
         .example([
             [

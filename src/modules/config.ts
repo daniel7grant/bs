@@ -21,6 +21,18 @@ export function findTemplate(templates: BsTemplate[], name: string): BsTemplate 
     );
 }
 
+export function generateTemplateFullname(template: BsTemplate): string {
+    return `${template.namespace}:${template.name}`;
+}
+
+export function generateTemplateNames(template?: BsTemplate): string[] {
+    return template ? [generateTemplateFullname(template), template.name, ...template.aliases] : [];
+}
+
+export function generateTemplateParamNames(template?: BsTemplate): string[] {
+    return template?.parameters?.map((p) => p.name) ?? [];
+}
+
 export function initConfig(): BsConfig {
     return {
         templates: [],
