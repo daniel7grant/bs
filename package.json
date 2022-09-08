@@ -2,36 +2,40 @@
     "name": "bs",
     "version": "0.1.0",
     "description": "",
-    "main": "dist/index.js",
+    "exports": "./dist/index.js",
+    "type": "module",
     "files": [
         "dist/**/*"
     ],
     "bin": {
-        "bs": "dist/index.js"
+        "bs": "./dist/index.js"
     },
     "scripts": {
         "build": "tsc -p tsconfig.json",
         "dev": "ts-node src/index.ts",
         "prepare": "npm run build"
     },
+    "engines": {
+        "node": ">=14.16"
+    },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
         "dvali": "^0.2.7",
-        "find-up": "^5.0.0",
+        "find-up": "^6.3.0",
+        "globby": "^13.1.2",
         "handlebars": "^4.7.7",
         "js-yaml": "^4.1.0",
-        "node-dir": "^0.1.17",
         "ramda": "^0.28.0",
         "yargs": "^17.5.1"
     },
     "devDependencies": {
+        "@types/globby": "^9.1.0",
         "@types/js-yaml": "^4.0.5",
         "@types/node": "^17.0.39",
-        "@types/node-dir": "^0.0.34",
         "@types/ramda": "^0.28.14",
-        "@types/yargs": "^17.0.10",
+        "@types/yargs": "^17.0.12",
         "@typescript-eslint/eslint-plugin": "^5.27.1",
         "@typescript-eslint/parser": "^5.27.1",
         "eslint": "^8.17.0",

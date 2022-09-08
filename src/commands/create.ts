@@ -1,9 +1,9 @@
-import { lstat, readFile } from 'fs/promises';
-import path from 'path';
-import { findTemplate, generateTemplateFullname, initConfig, saveConfig } from '../modules/config';
-import { unrenderFile } from '../modules/render';
-import { exists, getFilesRecursively } from '../modules/utils';
-import { BsConfig, BsTemplate, CreateArguments, COMMAND_OPTIONS } from '../types';
+import { readFile } from 'fs/promises';
+import { globby } from 'globby';
+import { BsConfig, BsTemplate, CreateArguments, COMMAND_OPTIONS } from '../types.js';
+import { findTemplate, generateTemplateFullname, initConfig, saveConfig } from '../modules/config.js';
+import { unrenderFile } from '../modules/render.js';
+import { getNameFromPaths } from '../modules/utils.js';
 
 async function createTemplateFromFiles(
     templateName: string,
@@ -32,14 +32,16 @@ export default async function create(
     params: CreateArguments
 ) {
     const {
-        'from-file': fromFile,
+        'from-file': patterns,
         'disable-parameters': disableParameters,
         template: templateName,
         name,
+        gitignore,
     } = params;
-    if (fromFile) {
-        if (!(await exists(fromFile))) {
-            throw new Error(`File ${fromFile} does not exist.\n`);
+    if (patterns) {
+        const files = await globby(patterns, { gitignore });
+        if (files.length === 0) {
+            throw new Error(`File ${patterns} does not exist.\n`);
         }
 
         if (!templateName.includes(':')) {
@@ -55,25 +57,12 @@ export default async function create(
             );
         }
 
-        const stat = await lstat(fromFile);
-        let template: BsTemplate | undefined;
-        const parsedName = name ?? path.parse(fromFile).name;
-        if (stat.isFile()) {
-            template = await createTemplateFromFiles(
-                templateName,
-                [fromFile],
-                !disableParameters ? parsedName : undefined
-            );
-        } else if (stat.isDirectory()) {
-            const files = await getFilesRecursively(fromFile);
-            template = await createTemplateFromFiles(
-                templateName,
-                files,
-                !disableParameters ? parsedName : undefined
-            );
-        } else {
-            throw new Error(`Param ${fromFile} should be a file or a directory.\n`);
-        }
+        const parsedName = name ?? getNameFromPaths(files);
+        const template = await createTemplateFromFiles(
+            templateName,
+            files,
+            !disableParameters ? parsedName : undefined
+        );
 
         const updatedConfig = config ?? initConfig();
         updatedConfig.templates = updatedConfig.templates

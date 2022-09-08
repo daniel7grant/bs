@@ -1,12 +1,12 @@
 import { sortBy } from 'ramda';
-import yargs from 'yargs';
+import yargs, { AsyncCompletionFunction, Argv, PositionalOptionsType } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import {
     findTemplate,
     generateTemplateFullname,
     generateTemplateNames,
     generateTemplateParamNames,
-} from './config';
+} from './config.js';
 import {
     COMMANDS,
     OPTIONS,
@@ -17,9 +17,9 @@ import {
     BsTemplate,
     CreateArguments,
     GenerateArguments,
-} from '../types';
+} from '../types.js';
 
-function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
+function complete(templates: BsTemplate[] = []): AsyncCompletionFunction {
     return (current, argv) => {
         if (current.startsWith('-')) {
             const optionCompletion = OPTIONS.map((p) => `--${p}`);
@@ -62,7 +62,7 @@ function complete(templates: BsTemplate[] = []): yargs.AsyncCompletionFunction {
 }
 
 function generateTemplateParameters(parameters: BsParameter[] = []) {
-    return (y: yargs.Argv): yargs.Argv<GenerateArguments> => {
+    return (y: Argv): Argv<GenerateArguments> => {
         const parameterYargs = y
             .positional('names', {
                 describe: 'the name or path to pass to the template',
@@ -85,7 +85,7 @@ function generateTemplateParameters(parameters: BsParameter[] = []) {
                     desc: parameter.description ?? '',
                     demandOption: parameter.required,
                     default: parameter.default,
-                    type: parameter.type as yargs.PositionalOptionsType,
+                    type: parameter.type as PositionalOptionsType,
                 }),
             parameterYargs
         );
@@ -93,7 +93,7 @@ function generateTemplateParameters(parameters: BsParameter[] = []) {
 }
 
 function generateTemplateCommands(templates: BsTemplate[] = []) {
-    return (y: yargs.Argv): yargs.Argv<GenerateArguments> => {
+    return (y: Argv): Argv<GenerateArguments> => {
         const sortedTemplates = sortBy(generateTemplateFullname, templates);
         return sortedTemplates
             .reduce(
@@ -103,14 +103,14 @@ function generateTemplateCommands(templates: BsTemplate[] = []) {
                         template.description ?? '',
                         generateTemplateParameters(template.parameters)
                     ),
-                y as yargs.Argv<GenerateArguments>
+                y as Argv<GenerateArguments>
             )
             .demandCommand(1, '');
     };
 }
 
 function createTemplateCommands() {
-    return (y: yargs.Argv): yargs.Argv<CreateArguments> =>
+    return (y: Argv): Argv<CreateArguments> =>
         y
             .positional('template', {
                 describe: 'The name of the new template',
@@ -120,6 +120,7 @@ function createTemplateCommands() {
             .option('from-file', {
                 describe: 'The file or directory to create the template from',
                 type: 'string',
+                array: true,
             })
             .option('name', {
                 describe: 'The name to be used as the parameter for the template',
@@ -129,6 +130,12 @@ function createTemplateCommands() {
                 describe: 'Whether it should overwrite existing template',
                 type: 'boolean',
                 default: false,
+            })
+            .option('gitignore', {
+                describe:
+                    'Whether it should respect the .gitignore files (use --no-gitignore to not)',
+                type: 'boolean',
+                default: true,
             })
             .option('disable-parameters', {
                 describe: 'Whether it must not guess to replace template parts',

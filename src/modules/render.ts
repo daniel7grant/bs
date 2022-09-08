@@ -1,6 +1,6 @@
 import Handlebars from 'handlebars';
-import { BsFile, isFileWithContent } from '../types';
-import { capitalize, convertNameToPath, convertToCase, replaceWithCases } from './utils';
+import { BsFile, isFileWithContent } from '../types.js';
+import { capitalize, convertNameToPath, convertToCase, replaceWithCases } from './utils.js';
 
 Handlebars.registerHelper('lower', (str: string) => str.toLocaleLowerCase());
 Handlebars.registerHelper('upper', (str: string) => str.toLocaleUpperCase());

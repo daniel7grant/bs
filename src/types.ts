@@ -37,9 +37,10 @@ export interface BaseArguments {
 export interface CreateArguments extends BaseArguments {
     template: string;
     name: string | undefined;
-    'from-file': string | undefined;
+    'from-file': string[] | undefined;
     force: boolean;
     'disable-parameters': boolean;
+    gitignore: boolean;
 }
 
 export interface GenerateArguments extends BaseArguments {

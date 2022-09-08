@@ -1,9 +1,9 @@
 #!/usr/bin/node
-import create from './commands/create';
-import generate from './commands/generate';
-import parseArguments from './modules/arguments';
-import { loadConfig } from './modules/config';
-import { isCreateCommand, isGenerateCommand } from './types';
+import create from './commands/create.js';
+import generate from './commands/generate.js';
+import parseArguments from './modules/arguments.js';
+import { loadConfig } from './modules/config.js';
+import { isCreateCommand, isGenerateCommand } from './types.js';
 
 async function main() {
     const config = await loadConfig();

@@ -1,10 +1,10 @@
-import findUp from 'find-up';
+import { findUp } from 'find-up';
 import { readFile, writeFile } from 'fs/promises';
 import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import path from 'path';
-import { BsConfig, BsTemplate } from '../types';
-import validateBsConfig from './validation';
+import { BsConfig, BsTemplate } from '../types.js';
+import validateBsConfig from './validation.js';
 
 const configurationPaths = [
     '.bsconfig.yaml',

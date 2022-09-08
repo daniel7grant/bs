@@ -1,5 +1,5 @@
 import validate, { arrayOf, isString, optional, isBool } from 'dvali';
-import { BsFile, BsParameter, BsConfig } from '../types';
+import { BsFile, BsParameter, BsConfig } from '../types.js';
 
 const validateBsFile = validate<BsFile>({
     path: [isString()],

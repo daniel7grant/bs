@@ -1,13 +1,19 @@
 import { constants } from 'fs';
 import { access } from 'fs/promises';
-import { files } from 'node-dir';
 import path from 'path';
-import { promisify } from 'util';
-
-export const getFilesRecursively: (dir: string) => Promise<string[]> = promisify(files);
+import { takeWhile, transpose, uniq } from 'ramda';
 
 export function escapeForRegExp(str: string): RegExp {
     return new RegExp(str.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&'), 'g');
+}
+
+const allEquals = <T>(xs: T[]): boolean => uniq(xs).length === 1;
+
+export function getNameFromPaths(paths: string[]): string | undefined {
+    const parsedPaths = paths.map((p) => p.split(path.sep));
+    const commonPathParts = takeWhile(allEquals, transpose(parsedPaths));
+    const commonPath = commonPathParts.map(([x]) => x).join('/');
+    return path.parse(path.resolve(commonPath)).name;
 }
 
 export async function exists(filename: string): Promise<boolean> {

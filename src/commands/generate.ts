@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from 'fs/promises';
-import { findTemplate, getConfigFile } from '../modules/config';
-import { renderFile } from '../modules/render';
-import { exists, subdirs } from '../modules/utils';
-import { BsConfig, GenerateArguments, isFileWithContent } from '../types';
+import { findTemplate, getConfigFile } from '../modules/config.js';
+import { renderFile } from '../modules/render.js';
+import { exists, subdirs } from '../modules/utils.js';
+import { BsConfig, GenerateArguments, isFileWithContent } from '../types.js';
 
 export default async function generate(
     config: BsConfig | undefined,
