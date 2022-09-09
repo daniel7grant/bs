@@ -19,4 +19,8 @@ async function main() {
     throw new Error('Command not found.\n');
 }
 
-main().catch((err) => process.stderr.write(err.message));
+main().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    process.exit(1);
+});
