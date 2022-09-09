@@ -1,9 +1,14 @@
 import { readFile } from 'fs/promises';
 import { globby } from 'globby';
 import { BsConfig, BsTemplate, CreateArguments, COMMAND_OPTIONS } from '../types.js';
-import { findTemplate, generateTemplateFullname, initConfig, saveConfig } from '../modules/config.js';
+import {
+    findTemplate,
+    generateTemplateFullname,
+    initConfig,
+    saveConfig,
+} from '../modules/config.js';
 import { unrenderFile } from '../modules/render.js';
-import { getNameFromPaths } from '../modules/utils.js';
+import { escapeHandlebars, getNameFromPaths } from '../modules/utils.js';
 
 async function createTemplateFromFiles(
     templateName: string,
@@ -19,7 +24,7 @@ async function createTemplateFromFiles(
         files: await Promise.all(
             filenames.map(async (filename) => {
                 const content = await readFile(filename, 'utf-8');
-                const file = { path: filename, content };
+                const file = { path: filename, content: escapeHandlebars(content) };
                 return nameToReplace ? unrenderFile(file, { name: nameToReplace }) : file;
             })
         ),

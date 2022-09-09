@@ -25,7 +25,7 @@ export async function renderFile(file: BsFile, params: Record<string, any>): Pro
     throw new Error();
 }
 
-export async function unrenderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
+export function unrenderFile(file: BsFile, params: Record<string, any>): BsFile {
     if (isFileWithContent(file)) {
         return {
             path: replaceWithCases(file.path, params.name),
