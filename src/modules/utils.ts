@@ -199,5 +199,5 @@ export function replaceWithCases(str: string, name: string): string {
  * @returns the escaped string
  */
 export function escapeHandlebars(str: string): string {
-    return str.replace(/(\{\{.*\}\})/g, '\\$1');
+    return str.replace(/\{\{/g, '\\{{');
 }
