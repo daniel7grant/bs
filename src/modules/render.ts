@@ -1,7 +1,9 @@
 import Handlebars from 'handlebars';
+import { plural } from 'pluralize';
 import { BsFile, isFileWithContent } from '../types.js';
 import { capitalize, convertNameToPath, convertToCase, replaceWithCases } from './utils.js';
 
+Handlebars.registerHelper('plural', (str: string) => plural(str));
 Handlebars.registerHelper('lower', (str: string) => str.toLocaleLowerCase());
 Handlebars.registerHelper('upper', (str: string) => str.toLocaleUpperCase());
 Handlebars.registerHelper('capitalize', (str: string) => capitalize(str));

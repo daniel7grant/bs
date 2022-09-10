@@ -1,6 +1,7 @@
 import { constants } from 'fs';
 import { access } from 'fs/promises';
 import path from 'path';
+import { plural, singular } from 'pluralize';
 import { takeWhile, transpose, uniq } from 'ramda';
 
 /**
@@ -162,6 +163,18 @@ export function escapeForRegExp(str: string): RegExp {
     return new RegExp(str.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&'), 'g');
 }
 
+const helpers: Record<string, (x: string) => string> = {
+    '': (name) => name,
+    lower: (name) => name.toLocaleLowerCase(),
+    upper: (name) => name.toLocaleUpperCase(),
+    capitalize: (name) => capitalize(name),
+    camel: (name) => convertToCase(name, 'camel'),
+    pascal: (name) => convertToCase(name, 'pascal'),
+    snake: (name) => convertToCase(name, 'snake'),
+    constant: (name) => convertToCase(name, 'constant'),
+    kebab: (name) => convertToCase(name, 'kebab'),
+    words: (name) => convertToCase(name, 'words'),
+};
 /**
  * Replace the different cases of the name in str.
  *
@@ -176,24 +189,36 @@ export function escapeForRegExp(str: string): RegExp {
  * @returns the replaced string
  */
 export function replaceWithCases(str: string, name: string): string {
-    return str
-        .replace(escapeForRegExp(name), '{{ name }}')
-        .replace(escapeForRegExp(name.toLocaleLowerCase()), '{{ lower name }}')
-        .replace(escapeForRegExp(name.toLocaleUpperCase()), '{{ upper name }}')
-        .replace(escapeForRegExp(capitalize(name)), '{{ capitalize name }}')
-        .replace(escapeForRegExp(convertToCase(name, 'camel')), '{{ camel name }}')
-        .replace(escapeForRegExp(convertToCase(name, 'pascal')), '{{ pascal name }}')
-        .replace(escapeForRegExp(convertToCase(name, 'snake')), '{{ snake name }}')
-        .replace(escapeForRegExp(convertToCase(name, 'constant')), '{{ constant name }}')
-        .replace(escapeForRegExp(convertToCase(name, 'kebab')), '{{ kebab name }}')
-        .replace(escapeForRegExp(convertToCase(name, 'words')), '{{ words name }}');
+    const singularName = singular(name);
+    const pluralName = plural(name);
+
+    let output = str;
+    if (singularName !== pluralName) {
+        output = Object.entries(helpers).reduce(
+            (previousStr, [helperName, helperFn]) =>
+                previousStr.replace(
+                    escapeForRegExp(helperFn(pluralName)),
+                    `{{ plural( ${helperName ? `${helperName} ` : ''}name) }}`
+                ),
+            output
+        );
+    }
+    output = Object.entries(helpers).reduce(
+        (previousStr, [helperName, helperFn]) =>
+            previousStr.replace(
+                escapeForRegExp(helperFn(singularName)),
+                `{{ ${helperName ? `${helperName} ` : ''}name }}`
+            ),
+        output
+    );
+    return output;
 }
 
 /**
  * Replace "{{ }}" with escaped blocks for Handlebars
  *
  * @example
- *      escapeHandlebars("{{ originalTemplate }}") // => "{{ originalTemplate }}"
+ *      escapeHandlebars("{{ originalTemplate }}") // => "\{{ originalTemplate }}"
  *
  * @param str the string to escape
  * @returns the escaped string
