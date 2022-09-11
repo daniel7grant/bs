@@ -122,6 +122,11 @@ function createTemplateCommands() {
                 type: 'string',
                 array: true,
             })
+            .option('include', {
+                describe: 'The templates to include in the new template',
+                type: 'string',
+                array: true,
+            })
             .option('name', {
                 describe: 'The name to be used as the parameter for the template',
                 type: 'string',

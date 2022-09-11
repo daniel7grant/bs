@@ -3,7 +3,8 @@ import { readFile, writeFile } from 'fs/promises';
 import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import path from 'path';
-import { BsConfig, BsTemplate } from '../types.js';
+import { difference, uniqBy } from 'ramda';
+import { BsConfig, BsFile, BsTemplate, BsFilesTemplate } from '../types.js';
 import validateBsConfig from './validation.js';
 
 const configurationPaths = [
@@ -31,6 +32,49 @@ export function findTemplate(templates: BsTemplate[], name: string): BsTemplate 
         templates.find((t) => t.name === name) ??
         templates.find((t) => t.aliases.includes(name))
     );
+}
+
+export function findReferences(templates: BsTemplate[], includes: string[]): BsTemplate[] {
+    const referencedTemplates: [string, BsTemplate | undefined][] = includes.map((t) => [
+        t,
+        findTemplate(templates, t),
+    ]);
+    const notFoundTemplates = referencedTemplates.filter(([, t]) => t === undefined);
+    if (notFoundTemplates.length > 0) {
+        throw new Error(
+            `Templates ${notFoundTemplates
+                .map(([n]) => n)
+                .join(', ')} not found in the config file.`
+        );
+    }
+    return referencedTemplates.map(([, t]) => t!);
+}
+
+export function getReferencedFileTemplates(
+    templates: BsTemplate[],
+    template: BsTemplate,
+    alreadyIncluded: string[] = []
+): BsFilesTemplate[] {
+    // TODO: fix validation here as well
+    if ('files' in template && template.files.length > 0) {
+        return [template];
+    }
+    if ('includes' in template) {
+        const templatesToInclude = difference(template.includes, alreadyIncluded);
+        const referencedTemplates = findReferences(templates, templatesToInclude);
+        return referencedTemplates.flatMap((t) =>
+            getReferencedFileTemplates(templates, t, alreadyIncluded.concat(templatesToInclude))
+        );
+    }
+    throw new Error(
+        `Template ${generateTemplateFullname(
+            template
+        )} has to contain either a files or and includes block.`
+    );
+}
+
+export function getFilesFromTemplates(templates: BsFilesTemplate[]): BsFile[] {
+    return uniqBy((f) => f.path, templates.flatMap((t) => t.files).reverse());
 }
 
 export function initConfig(): BsConfig {

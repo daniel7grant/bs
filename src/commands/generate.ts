@@ -1,5 +1,10 @@
 import { mkdir, writeFile } from 'fs/promises';
-import { findTemplate, getConfigFile } from '../modules/config.js';
+import {
+    findTemplate,
+    getConfigFile,
+    getFilesFromTemplates,
+    getReferencedFileTemplates,
+} from '../modules/config.js';
 import { renderFile } from '../modules/render.js';
 import { exists, subdirs } from '../modules/utils.js';
 import { BsConfig, GenerateArguments, isFileWithContent } from '../types.js';
@@ -19,8 +24,10 @@ export default async function generate(
         throw new Error(`Template "${templateName}" not found in ${configFile}.\n`);
     }
 
+    const fileTemplates = getReferencedFileTemplates(config.templates, template);
+    const files = getFilesFromTemplates(fileTemplates);
     const renderedFiles = await Promise.all(
-        names.flatMap((name) => template.files.map((f) => renderFile(f, { name, ...params })))
+        names.flatMap((name) => files.map((f) => renderFile(f, { name, ...params })))
     );
 
     const existingFiles = await Promise.all(renderedFiles.map((f) => f.path).map(exists));

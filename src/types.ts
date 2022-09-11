@@ -17,14 +17,23 @@ export interface BsParameter {
     required: boolean;
 }
 
-export interface BsTemplate {
+export interface BaseBsTemplate {
     name: string;
     namespace?: string;
     aliases: string[];
     description?: string;
     parameters?: BsParameter[];
+}
+
+export interface BsFilesTemplate extends BaseBsTemplate {
     files: BsFile[];
 }
+
+export interface BsIncludesTemplate extends BaseBsTemplate {
+    includes: string[];
+}
+
+export type BsTemplate = BsFilesTemplate | BsIncludesTemplate;
 
 export interface BsConfig {
     templates: BsTemplate[];
@@ -38,6 +47,7 @@ export interface CreateArguments extends BaseArguments {
     template: string;
     name: string | undefined;
     'from-file': string[] | undefined;
+    include: string[] | undefined;
     force: boolean;
     'disable-parameters': boolean;
     gitignore: boolean;
@@ -63,7 +73,7 @@ export const COMMAND_OPTIONS: {
     CREATE: (keyof CreateArguments)[];
     GENERATE: (keyof GenerateArguments)[];
 } = {
-    CREATE: ['from-file', 'force', 'disable-parameters', 'name'],
+    CREATE: ['from-file', 'include', 'force', 'disable-parameters', 'name'],
     GENERATE: ['force'],
 };
 
