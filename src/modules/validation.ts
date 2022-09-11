@@ -20,7 +20,9 @@ export default validate<BsConfig>({
         namespace: [isString()],
         description: optional([isString()]),
         aliases: arrayOf([isString()]),
+        // TODO: fix validation
         files: arrayOf(validateBsFile),
+        includes: optional(arrayOf(isString())),
         parameters: optional(arrayOf(validateBsParameter)),
     }),
 });
