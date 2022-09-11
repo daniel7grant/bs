@@ -32,6 +32,7 @@ function complete(templates: BsTemplate[] = []): AsyncCompletionFunction {
                             ...COMMAND_OPTIONS.GENERATE,
                         ].map((p) => `--${p}`);
                     case COMMANDS.CREATE:
+                        // TODO: remove either the --from-file or --includes if the other exists
                         return COMMAND_OPTIONS.CREATE.map((p) => `--${p}`);
                     default:
                         return [];
@@ -46,17 +47,25 @@ function complete(templates: BsTemplate[] = []): AsyncCompletionFunction {
                 switch (argv._[1]) {
                     case COMMANDS.GENERATE[0]:
                     case COMMANDS.GENERATE[1]:
-                        return templates.flatMap((template) => {
-                            if (template.namespace) {
-                                return generateTemplateNames(template);
-                            }
-                            return [template.name];
-                        });
+                        return templates.flatMap(generateTemplateNames);
                     default:
                         return [];
                 }
             default:
-                return [];
+                switch (argv._[1]) {
+                    case COMMANDS.CREATE:
+                        // We are completing an --include flag
+                        if (
+                            typeof argv.include !== 'undefined' &&
+                            argv.include[argv.include.length - 1] === current
+                        ) {
+                            // TODO: exclude previously used templates
+                            return templates.map(generateTemplateFullname);
+                        }
+                        return [];
+                    default:
+                        return [];
+                }
         }
     };
 }
@@ -151,6 +160,7 @@ function createTemplateCommands() {
 
 export default async function parseArguments(config: BsConfig | undefined): Promise<BsArguments> {
     return yargs(hideBin(process.argv))
+        .parserConfiguration({ 'greedy-arrays': false })
         .usage('$0: bootstrap files quickly and efficiently')
         .example([
             [

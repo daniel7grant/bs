@@ -19,7 +19,7 @@ export interface BsParameter {
 
 export interface BaseBsTemplate {
     name: string;
-    namespace?: string;
+    namespace: string;
     aliases: string[];
     description?: string;
     parameters?: BsParameter[];
