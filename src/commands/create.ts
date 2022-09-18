@@ -1,6 +1,5 @@
 import { readFile } from 'fs/promises';
 import { globby } from 'globby';
-import { BsConfig, BsTemplate, CreateArguments } from '../types.js';
 import {
     findReferences,
     findTemplate,
@@ -10,6 +9,7 @@ import {
 } from '../modules/config.js';
 import { unrenderFile } from '../modules/render.js';
 import { escapeHandlebars, getNameFromPaths } from '../modules/utils.js';
+import { BsConfig, BsTemplate, CreateArguments } from '../types.js';
 
 async function createTemplateFromFiles(
     templateName: string,

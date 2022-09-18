@@ -1,23 +1,23 @@
 import { sortBy } from 'ramda';
-import yargs, { AsyncCompletionFunction, Argv, PositionalOptionsType } from 'yargs';
+import yargs, { Argv, AsyncCompletionFunction, PositionalOptionsType } from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import {
+    BsArguments,
+    BsConfig,
+    BsParameter,
+    BsTemplate,
+    COMMANDS,
+    COMMAND_OPTIONS,
+    CreateArguments,
+    GenerateArguments,
+    OPTIONS,
+} from '../types.js';
 import {
     findTemplate,
     generateTemplateFullname,
     generateTemplateNames,
     generateTemplateParamNames,
 } from './config.js';
-import {
-    COMMANDS,
-    OPTIONS,
-    COMMAND_OPTIONS,
-    BsArguments,
-    BsConfig,
-    BsParameter,
-    BsTemplate,
-    CreateArguments,
-    GenerateArguments,
-} from '../types.js';
 
 function complete(templates: BsTemplate[] = []): AsyncCompletionFunction {
     return (current, argv) => {

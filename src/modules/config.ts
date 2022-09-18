@@ -4,7 +4,7 @@ import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import path from 'path';
 import { difference, uniqBy } from 'ramda';
-import { BsConfig, BsFile, BsTemplate, BsFilesTemplate } from '../types.js';
+import { BsConfig, BsFile, BsFilesTemplate, BsTemplate } from '../types.js';
 import validateBsConfig from './validation.js';
 
 const configurationPaths = [

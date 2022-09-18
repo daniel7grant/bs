@@ -32,6 +32,7 @@
         "yargs": "^17.5.1"
     },
     "devDependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^3.3.0",
         "@types/globby": "^9.1.0",
         "@types/js-yaml": "^4.0.5",
         "@types/node": "^17.0.39",
