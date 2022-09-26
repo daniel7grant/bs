@@ -33,5 +33,5 @@ const validateBsIncludeTemplate = validate({
 });
 
 export default validate<BsConfig>({
-    templates: arrayOf(either(validateBsFilesTemplate, validateBsIncludeTemplate)),
+    templates: arrayOf(either([validateBsFilesTemplate, validateBsIncludeTemplate])),
 });

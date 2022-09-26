@@ -22,7 +22,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "dvali": "^0.2.10",
+        "dvali": "^0.2.13",
         "find-up": "^6.3.0",
         "globby": "^13.1.2",
         "handlebars": "^4.7.7",
