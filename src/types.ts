@@ -59,12 +59,18 @@ export interface GenerateArguments extends BaseArguments {
     [k: string]: unknown;
 }
 
-export type BsArguments = CreateArguments | GenerateArguments;
+export interface InitArguments extends BaseArguments {
+    directory: string;
+    force: boolean;
+}
+
+export type BsArguments = CreateArguments | GenerateArguments | InitArguments;
 
 export const COMMANDS = {
+    COMPLETION: 'completion',
     CREATE: 'create',
     GENERATE: ['generate', 'gen'],
-    COMPLETION: 'completion',
+    INIT: 'init',
 };
 
 export const OPTIONS = ['help', 'version'];
@@ -72,9 +78,11 @@ export const OPTIONS = ['help', 'version'];
 export const COMMAND_OPTIONS: {
     CREATE: (keyof CreateArguments)[];
     GENERATE: (keyof GenerateArguments)[];
+    INIT: (keyof InitArguments)[];
 } = {
     CREATE: ['from-file', 'include', 'force', 'disable-parameters', 'name'],
     GENERATE: ['force'],
+    INIT: ['directory', 'force'],
 };
 
 export function isCreateCommand(args: BsArguments): args is CreateArguments {
@@ -83,4 +91,8 @@ export function isCreateCommand(args: BsArguments): args is CreateArguments {
 
 export function isGenerateCommand(args: BsArguments): args is GenerateArguments {
     return args._[0] === COMMANDS.GENERATE[0] || args._[0] === COMMANDS.GENERATE[1];
+}
+
+export function isInitCommand(args: BsArguments): args is InitArguments {
+    return args._[0] === COMMANDS.INIT;
 }

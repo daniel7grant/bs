@@ -200,10 +200,11 @@ export async function loadConfig(): Promise<BsConfig | undefined> {
  * Dumps the config object to yaml and saves it to the default config path.
  *
  * @param config the config object
+ * @param file optional the file name to save to
  * @returns the filename the config has been saved
  */
-export async function saveConfig(config: BsConfig): Promise<string> {
-    const filename = (await getConfigFile()) ?? configurationPaths[0];
+export async function saveConfig(config: BsConfig, file?: string): Promise<string> {
+    const filename = file ?? (await getConfigFile()) ?? configurationPaths[0];
     try {
         await writeFile(filename, dump(config), 'utf8');
         return filename;

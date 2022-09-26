@@ -10,6 +10,7 @@ import {
     COMMAND_OPTIONS,
     CreateArguments,
     GenerateArguments,
+    InitArguments,
     OPTIONS,
 } from '../types.js';
 import {
@@ -34,6 +35,8 @@ function complete(templates: BsTemplate[] = []): AsyncCompletionFunction {
                     case COMMANDS.CREATE:
                         // TODO: remove either the --from-file or --includes if the other exists
                         return COMMAND_OPTIONS.CREATE.map((p) => `--${p}`);
+                    case COMMANDS.INIT:
+                        return COMMAND_OPTIONS.INIT.map((p) => `--${p}`);
                     default:
                         return [];
                 }
@@ -158,17 +161,38 @@ function createTemplateCommands() {
             });
 }
 
+function initTemplateCommands() {
+    return (y: Argv): Argv<InitArguments> =>
+        y
+            .option('directory', {
+                describe: 'The directory to create the file into (default: current directory)',
+                type: 'string',
+                default: '.'
+            })
+            .option('force', {
+                describe: 'Whether it should overwrite existing config file',
+                type: 'boolean',
+                default: false,
+            });
+}
+
 export default async function parseArguments(config: BsConfig | undefined): Promise<BsArguments> {
     return yargs(hideBin(process.argv))
         .parserConfiguration({ 'greedy-arrays': false })
         .usage('$0: bootstrap files quickly and efficiently')
         .example([
+            [`$0 ${COMMANDS.INIT}`, 'Initialize a .bsconfig.yaml file'],
             [
                 `$0 ${COMMANDS.GENERATE[1]} react:component HelloWorld`,
                 'Generate files from template',
             ],
             [`source <($0 ${COMMANDS.COMPLETION})`, 'Generate tab completion for bash or zsh'],
         ])
+        .command(
+            COMMANDS.INIT,
+            'Initialize a .bsconfig.yaml file in the local directory',
+            initTemplateCommands()
+        )
         .command(`${COMMANDS.CREATE} <template>`, 'Create new template', createTemplateCommands())
         .command(
             COMMANDS.GENERATE,
