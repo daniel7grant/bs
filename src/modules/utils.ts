@@ -1,7 +1,7 @@
 import { constants } from 'fs';
 import { access } from 'fs/promises';
 import path from 'path';
-import { plural, singular } from 'pluralize';
+import pluralize from 'pluralize';
 import { takeWhile, transpose, uniq } from 'ramda';
 
 /**
@@ -189,8 +189,8 @@ const helpers: Record<string, (x: string) => string> = {
  * @returns the replaced string
  */
 export function replaceWithCases(str: string, name: string): string {
-    const singularName = singular(name);
-    const pluralName = plural(name);
+    const singularName = pluralize.singular(name);
+    const pluralName = pluralize.plural(name);
 
     let output = str;
     if (singularName !== pluralName) {
