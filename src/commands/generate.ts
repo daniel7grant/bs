@@ -1,13 +1,6 @@
-import { mkdir, writeFile } from 'fs/promises';
-import {
-    findTemplate,
-    getConfigFile,
-    getFilesFromTemplates,
-    getReferencedFileTemplates,
-} from '../modules/config.js';
-import { renderFile } from '../modules/render.js';
-import { exists, subdirs } from '../modules/utils.js';
-import { BsConfig, GenerateArguments, isFileWithContent } from '../types.js';
+import FileGenerator from '../generators/file.js';
+import { findTemplate, getConfigFile } from '../modules/config.js';
+import { BsConfig, GenerateArguments } from '../types.js';
 
 export default async function generate(
     config: BsConfig | undefined,
@@ -24,40 +17,35 @@ export default async function generate(
         throw new Error(`Template "${templateName}" not found in ${configFile}.\n`);
     }
 
-    const fileTemplates = getReferencedFileTemplates(config.templates, template);
-    const files = getFilesFromTemplates(fileTemplates);
-    const renderedFiles = await Promise.all(
-        names.flatMap((name) => files.map((f) => renderFile(f, { name, ...params })))
-    );
+    // Collect the steps with the plugins, and validate the config format
+    const steps = (
+        await Promise.all(
+            names.map(async (name) => {
+                const results = await Promise.all(
+                    template.steps.map(async (step) => {
+                        switch (step.type) {
+                            case 'file': {
+                                return new FileGenerator(step, { name, force, ...params });
+                            }
+                            default:
+                                throw new Error(`There is no plugin for ${step.type}.`);
+                        }
+                    })
+                );
+                return results;
+            })
+        )
+    ).flat(1);
 
-    const existingFiles = await Promise.all(renderedFiles.map((f) => f.path).map(exists));
-    if (!force && existingFiles.some((f) => f === true)) {
-        throw new Error('Files already exist, add --force to overwrite.\n');
+    // Prepare the steps (e.g. generate files, test filesystem etc.)
+    const prepareResults = await Promise.allSettled(steps.map((step) => step.prepare()));
+    const prepareFailed = prepareResults.filter(
+        (r): r is PromiseRejectedResult => r.status === 'rejected'
+    );
+    if (prepareFailed.length > 0) {
+        throw new Error(`Preparation failed: ${prepareFailed.map((r) => r.reason).join(', ')}`);
     }
 
-    const dirsToCreate = new Set(renderedFiles.flatMap((f) => subdirs(f.path)).filter(Boolean));
-    await Array.from(dirsToCreate).reduce(
-        (previousPromise, dir) =>
-            previousPromise.then(async () => {
-                if (!(await exists(dir))) {
-                    await mkdir(dir);
-                    process.stdout.write(`Directory "${dir}" created.\n`);
-                }
-            }),
-        Promise.resolve()
-    );
-
-    const createdFiles = await Promise.all(
-        renderedFiles.map(async (file) => {
-            if (isFileWithContent(file)) {
-                await writeFile(file.path, file.content);
-            }
-
-            return file;
-        })
-    );
-
-    createdFiles.flat().forEach((file) => {
-        process.stdout.write(`File "${file.path}" created.\n`);
-    });
+    // Trigger the steps and finish the generation
+    await Promise.all(steps.map((step) => step.generate()));
 }

@@ -4,7 +4,7 @@ import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import path from 'path';
 import { difference, uniqBy } from 'ramda';
-import { BsConfig, BsFile, BsFilesTemplate, BsTemplate } from '../types.js';
+import { BsConfig, BsFile, BsTemplate } from '../types.js';
 import validateBsConfig from './validation.js';
 
 const configurationPaths = [
@@ -121,28 +121,28 @@ export function findReferences(templates: BsTemplate[], includes: string[]): BsT
  * @param alreadyIncluded the templates that are already included
  * @returns the list of included templates recursively, or a one-item list if files templates
  */
-export function getReferencedFileTemplates(
-    templates: BsTemplate[],
-    template: BsTemplate,
-    alreadyIncluded: string[] = []
-): BsFilesTemplate[] {
-    // TODO: fix validation here as well
-    if ('files' in template && template.files.length > 0) {
-        return [template];
-    }
-    if ('includes' in template) {
-        const templatesToInclude = difference(template.includes, alreadyIncluded);
-        const referencedTemplates = findReferences(templates, templatesToInclude);
-        return referencedTemplates.flatMap((t) =>
-            getReferencedFileTemplates(templates, t, alreadyIncluded.concat(templatesToInclude))
-        );
-    }
-    throw new Error(
-        `Template ${generateTemplateFullname(
-            template
-        )} has to contain either a files or and includes block.`
-    );
-}
+// export function getReferencedFileTemplates(
+//     templates: BsTemplate[],
+//     template: BsTemplate,
+//     alreadyIncluded: string[] = []
+// ): BsFilesTemplate[] {
+//     // TODO: fix validation here as well
+//     if ('files' in template && template.files.length > 0) {
+//         return [template];
+//     }
+//     if ('includes' in template) {
+//         const templatesToInclude = difference(template.includes, alreadyIncluded);
+//         const referencedTemplates = findReferences(templates, templatesToInclude);
+//         return referencedTemplates.flatMap((t) =>
+//             getReferencedFileTemplates(templates, t, alreadyIncluded.concat(templatesToInclude))
+//         );
+//     }
+//     throw new Error(
+//         `Template ${generateTemplateFullname(
+//             template
+//         )} has to contain either a files or and includes block.`
+//     );
+// }
 
 /**
  * Get a deduplicated list of files from list of files templates.
@@ -150,9 +150,9 @@ export function getReferencedFileTemplates(
  * @param templates the list of files templates
  * @returns the list of files to render
  */
-export function getFilesFromTemplates(templates: BsFilesTemplate[]): BsFile[] {
-    return uniqBy((f) => f.path, templates.flatMap((t) => t.files).reverse());
-}
+// export function getFilesFromTemplates(templates: BsFilesTemplate[]): BsFile[] {
+//     return uniqBy((f) => f.path, templates.flatMap((t) => t.files).reverse());
+// }
 
 /**
  * Create a minimal new configuration.
@@ -189,7 +189,8 @@ export async function loadConfig(): Promise<BsConfig | undefined> {
     }
     try {
         const content = await readFile(filename, 'utf8');
-        const config = await validateBsConfig(load(content));
+        // TODO: add back the validation
+        const config = load(content) as BsConfig;
         return config;
     } catch (error: any) {
         throw new Error(`Loading config "${filename}" failed: ${error.message}\n`);

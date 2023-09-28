@@ -1,7 +1,6 @@
 import { readFile } from 'fs/promises';
 import { globby } from 'globby';
 import {
-    findReferences,
     findTemplate,
     generateTemplateFullname,
     initConfig,
@@ -22,24 +21,14 @@ async function createTemplateFromFiles(
         namespace,
         aliases: [],
         parameters: [],
-        files: await Promise.all(
+        steps: await Promise.all(
             filenames.map(async (filename) => {
                 const content = await readFile(filename, 'utf-8');
                 const file = { path: filename, content: escapeHandlebars(content) };
-                return nameToReplace ? unrenderFile(file, { name: nameToReplace }) : file;
+                const f = nameToReplace ? unrenderFile(file, { name: nameToReplace }) : file;
+                return { ...f, type: 'file' };
             })
         ),
-    };
-}
-
-function createTemplateFromIncludes(templateName: string, includes: string[]): BsTemplate {
-    const [namespace, name] = templateName.split(':');
-    return {
-        name,
-        namespace,
-        aliases: [],
-        parameters: [],
-        includes,
     };
 }
 
@@ -50,7 +39,6 @@ export default async function create(
 ) {
     const {
         'from-file': patterns = [],
-        include: includes = [],
         'disable-parameters': disableParameters,
         template: templateName,
         name,
@@ -81,18 +69,6 @@ export default async function create(
             templateName,
             files,
             !disableParameters ? parsedName : undefined
-        );
-    } else if (includes.length > 0) {
-        if (!config) {
-            throw new Error(
-                'Config file does not exist, create some templates before you can use --include.'
-            );
-        }
-
-        const referencedTemplates = findReferences(config.templates, includes);
-        template = createTemplateFromIncludes(
-            templateName,
-            referencedTemplates.map(generateTemplateFullname)
         );
     } else {
         throw new Error(

@@ -12,7 +12,7 @@
     },
     "scripts": {
         "build": "tsc -p tsconfig.json",
-        "dev": "ts-node src/index.ts",
+        "dev": "ts-node-esm src/index.ts",
         "prepare": "npm run build"
     },
     "engines": {
@@ -27,6 +27,7 @@
         "globby": "^13.1.2",
         "handlebars": "^4.7.7",
         "js-yaml": "^4.1.0",
+        "mkdirp": "^3.0.1",
         "pluralize": "^8.0.0",
         "ramda": "^0.28.0",
         "yargs": "^17.5.1"

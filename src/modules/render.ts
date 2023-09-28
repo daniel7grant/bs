@@ -14,6 +14,10 @@ Handlebars.registerHelper('constant', (str: string) => convertToCase(str, 'const
 Handlebars.registerHelper('kebab', (str: string) => convertToCase(str, 'kebab'));
 Handlebars.registerHelper('words', (str: string) => convertToCase(str, 'words'));
 
+export function renderString(str: string, params: Record<string, any>): string {
+    return Handlebars.compile(str)(params);
+}
+
 export async function renderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
     if (isFileWithContent(file)) {
         const { name, path } = convertNameToPath(params.name, file.path);

@@ -1,3 +1,14 @@
+export interface BsGeneratorParams {
+    name: string;
+    force: boolean;
+    [k: string]: unknown;
+}
+
+export interface BsGenerator {
+    prepare: () => Promise<void>;
+    generate: () => Promise<void>;
+}
+
 export interface BsFileWithContent {
     path: string;
     content: string;
@@ -17,23 +28,19 @@ export interface BsParameter {
     required: boolean;
 }
 
-export interface BaseBsTemplate {
+export interface BsStep {
+    type: string;
+    [k: string]: unknown;
+}
+
+export interface BsTemplate {
     name: string;
     namespace: string;
     aliases: string[];
     description?: string;
     parameters?: BsParameter[];
+    steps: BsStep[];
 }
-
-export interface BsFilesTemplate extends BaseBsTemplate {
-    files: BsFile[];
-}
-
-export interface BsIncludesTemplate extends BaseBsTemplate {
-    includes: string[];
-}
-
-export type BsTemplate = BsFilesTemplate | BsIncludesTemplate;
 
 export interface BsConfig {
     templates: BsTemplate[];

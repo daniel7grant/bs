@@ -18,28 +18,6 @@ export async function exists(filename: string): Promise<boolean> {
 }
 
 /**
- * Get all parent directories of a filename, to be created later.
- *
- * @example
- *      subdirs("src/commands/create.ts"); // => ["src", "src/commands"]
- *      subdirs("/src/commands/create.ts"); // => ["src", "src/commands"]
- *      subdirs("package.json"); // => []
- *
- * @param filename get list of all subdirs
- * @returns the list of directories
- */
-export function subdirs(filename: string): string[] {
-    const { dir } = path.parse(filename);
-    if (dir.startsWith('/')) {
-        process.stdout.write('Paths starting with "/" will be converted to local path.\n');
-    }
-    return dir.split('/').reduce<string[]>((dirs, newDir) => {
-        const last = dirs[dirs.length - 1];
-        return last ? [...dirs, path.join(last, newDir)] : [newDir];
-    }, []);
-}
-
-/**
  * Check whether all items are the same in an array
  *
  * @param xs an array
