@@ -1,10 +1,5 @@
-import validate, { arrayOf, either, isBool, isString, optional } from 'dvali';
+import validate, { arrayOf, isBool, isString, optional } from 'dvali';
 import { BsConfig } from '../types.js';
-
-const validateBsFile = validate({
-    path: [isString()],
-    content: [isString()],
-});
 
 const validateBsParameter = validate({
     name: [isString()],
@@ -14,24 +9,19 @@ const validateBsParameter = validate({
     required: [isBool()],
 });
 
-const validateBaseBsTemplate = {
+const validateBsGenerator = validate({
+    type: [isString()],
+});
+
+const validateBsTemplate = {
     name: [isString()],
     namespace: [isString()],
     description: optional([isString()]),
     aliases: arrayOf([isString()]),
     parameters: arrayOf(validateBsParameter),
+    generators: arrayOf(validateBsGenerator),
 };
 
-const validateBsFilesTemplate = validate({
-    ...validateBaseBsTemplate,
-    files: arrayOf(validateBsFile),
-});
-
-const validateBsIncludeTemplate = validate({
-    ...validateBaseBsTemplate,
-    includes: arrayOf(isString()),
-});
-
 export default validate<BsConfig>({
-    templates: arrayOf(either([validateBsFilesTemplate, validateBsIncludeTemplate])),
+    templates: arrayOf(validateBsTemplate),
 });

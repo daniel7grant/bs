@@ -4,7 +4,7 @@ import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import path from 'path';
 import { difference, uniqBy } from 'ramda';
-import { BsConfig, BsFile, BsFilesTemplate, BsTemplate } from '../types.js';
+import { BsConfig, BsTemplate } from '../types.js';
 import validateBsConfig from './validation.js';
 
 const configurationPaths = [
@@ -121,11 +121,11 @@ export function findReferences(templates: BsTemplate[], includes: string[]): BsT
  * @param alreadyIncluded the templates that are already included
  * @returns the list of included templates recursively, or a one-item list if files templates
  */
-export function getReferencedFileTemplates(
+export function getReferencedTemplates(
     templates: BsTemplate[],
     template: BsTemplate,
     alreadyIncluded: string[] = []
-): BsFilesTemplate[] {
+): BsTemplate[] {
     // TODO: fix validation here as well
     if ('files' in template && template.files.length > 0) {
         return [template];
@@ -134,7 +134,7 @@ export function getReferencedFileTemplates(
         const templatesToInclude = difference(template.includes, alreadyIncluded);
         const referencedTemplates = findReferences(templates, templatesToInclude);
         return referencedTemplates.flatMap((t) =>
-            getReferencedFileTemplates(templates, t, alreadyIncluded.concat(templatesToInclude))
+            getReferencedTemplates(templates, t, alreadyIncluded.concat(templatesToInclude))
         );
     }
     throw new Error(
@@ -150,7 +150,7 @@ export function getReferencedFileTemplates(
  * @param templates the list of files templates
  * @returns the list of files to render
  */
-export function getFilesFromTemplates(templates: BsFilesTemplate[]): BsFile[] {
+export function getFilesFromTemplates(templates: BsTemplate[]): BsFile[] {
     return uniqBy((f) => f.path, templates.flatMap((t) => t.files).reverse());
 }
 

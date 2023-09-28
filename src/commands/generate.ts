@@ -3,11 +3,11 @@ import {
     findTemplate,
     getConfigFile,
     getFilesFromTemplates,
-    getReferencedFileTemplates,
+    getReferencedTemplates,
 } from '../modules/config.js';
 import { renderFile } from '../modules/render.js';
 import { exists, subdirs } from '../modules/utils.js';
-import { BsConfig, GenerateArguments, isFileWithContent } from '../types.js';
+import { BsConfig, GenerateArguments } from '../types.js';
 
 export default async function generate(
     config: BsConfig | undefined,
@@ -24,7 +24,7 @@ export default async function generate(
         throw new Error(`Template "${templateName}" not found in ${configFile}.\n`);
     }
 
-    const fileTemplates = getReferencedFileTemplates(config.templates, template);
+    const fileTemplates = getReferencedTemplates(config.templates, template);
     const files = getFilesFromTemplates(fileTemplates);
     const renderedFiles = await Promise.all(
         names.flatMap((name) => files.map((f) => renderFile(f, { name, ...params })))

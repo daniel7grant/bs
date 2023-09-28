@@ -1,7 +1,11 @@
 import Handlebars from 'handlebars';
 import pluralize from 'pluralize';
-import { BsFile, isFileWithContent } from '../types.js';
 import { capitalize, convertNameToPath, convertToCase, replaceWithCases } from './utils.js';
+
+interface BsFile {
+    path: string;
+    content: string;
+}
 
 Handlebars.registerHelper('plural', (str: string) => pluralize.plural(str));
 Handlebars.registerHelper('lower', (str: string) => str.toLocaleLowerCase());
@@ -15,25 +19,17 @@ Handlebars.registerHelper('kebab', (str: string) => convertToCase(str, 'kebab'))
 Handlebars.registerHelper('words', (str: string) => convertToCase(str, 'words'));
 
 export async function renderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
-    if (isFileWithContent(file)) {
-        const { name, path } = convertNameToPath(params.name, file.path);
+    const { name, path } = convertNameToPath(params.name, file.path);
 
-        return {
-            path: Handlebars.compile(path)({ ...params, name }),
-            content: Handlebars.compile(file.content)({ ...params, name }),
-        };
-    }
-
-    throw new Error();
+    return {
+        path: Handlebars.compile(path)({ ...params, name }),
+        content: Handlebars.compile(file.content)({ ...params, name }),
+    };
 }
 
 export function unrenderFile(file: BsFile, params: Record<string, any>): BsFile {
-    if (isFileWithContent(file)) {
-        return {
-            path: replaceWithCases(file.path, params.name),
-            content: replaceWithCases(file.content, params.name),
-        };
-    }
-
-    throw new Error();
+    return {
+        path: replaceWithCases(file.path, params.name),
+        content: replaceWithCases(file.content, params.name),
+    };
 }

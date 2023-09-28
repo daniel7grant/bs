@@ -1,14 +1,3 @@
-export interface BsFileWithContent {
-    path: string;
-    content: string;
-}
-
-export type BsFile = BsFileWithContent;
-
-export function isFileWithContent(file: BsFile): file is BsFileWithContent {
-    return !!file.content;
-}
-
 export interface BsParameter {
     name: string;
     description?: string;
@@ -17,23 +6,18 @@ export interface BsParameter {
     required: boolean;
 }
 
-export interface BaseBsTemplate {
+export interface BsGenerator {
+    type: string;
+}
+
+export interface BsTemplate {
     name: string;
     namespace: string;
     aliases: string[];
     description?: string;
     parameters?: BsParameter[];
+    generators: BsGenerator[];
 }
-
-export interface BsFilesTemplate extends BaseBsTemplate {
-    files: BsFile[];
-}
-
-export interface BsIncludesTemplate extends BaseBsTemplate {
-    includes: string[];
-}
-
-export type BsTemplate = BsFilesTemplate | BsIncludesTemplate;
 
 export interface BsConfig {
     templates: BsTemplate[];
