@@ -1,7 +1,7 @@
 import validate, { arrayOf, isBool, isString, optional } from 'dvali';
-import { BsConfig } from '../types.js';
+import { Config } from '../types.js';
 
-const validateBsParameter = validate({
+const validateParameter = validate({
     name: [isString()],
     description: optional([isString()]),
     type: [isString()],
@@ -9,17 +9,17 @@ const validateBsParameter = validate({
     required: [isBool()],
 });
 
-const validateBaseBsTemplate = {
+const validateBaseTemplate = {
     name: [isString()],
     namespace: [isString()],
     description: optional([isString()]),
     aliases: arrayOf([isString()]),
-    parameters: arrayOf(validateBsParameter),
+    parameters: arrayOf(validateParameter),
     steps: arrayOf({
         type: [isString()],
     }),
 };
 
-export default validate<BsConfig>({
-    templates: arrayOf(validateBaseBsTemplate),
+export default validate<Config>({
+    templates: arrayOf(validateBaseTemplate),
 });

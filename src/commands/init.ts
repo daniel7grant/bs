@@ -1,10 +1,10 @@
 import path from 'path';
 import { initConfig, saveConfig } from '../modules/config.js';
 import { exists } from '../modules/utils.js';
-import { BsConfig, InitArguments } from '../types.js';
+import { Config, InitArguments } from '../types.js';
 
 export default async function init(
-    config: BsConfig | undefined,
+    config: Config | undefined,
     _: (number | string)[],
     params: InitArguments
 ) {

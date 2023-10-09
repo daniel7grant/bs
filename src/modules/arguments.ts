@@ -2,10 +2,10 @@ import { sortBy } from 'ramda';
 import yargs, { Argv, AsyncCompletionFunction, PositionalOptionsType } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import {
-    BsArguments,
-    BsConfig,
-    BsParameter,
-    BsTemplate,
+    Arguments,
+    Config,
+    Parameter,
+    Template,
     COMMANDS,
     COMMAND_OPTIONS,
     CreateArguments,
@@ -20,7 +20,7 @@ import {
     generateTemplateParamNames,
 } from './config.js';
 
-function complete(templates: BsTemplate[] = []): AsyncCompletionFunction {
+function complete(templates: Template[] = []): AsyncCompletionFunction {
     return (current, argv) => {
         if (current.startsWith('-')) {
             const optionCompletion = OPTIONS.map((p) => `--${p}`);
@@ -73,7 +73,7 @@ function complete(templates: BsTemplate[] = []): AsyncCompletionFunction {
     };
 }
 
-function generateTemplateParameters(parameters: BsParameter[] = []) {
+function generateTemplateParameters(parameters: Parameter[] = []) {
     return (y: Argv): Argv<GenerateArguments> => {
         const parameterYargs = y
             .positional('names', {
@@ -104,7 +104,7 @@ function generateTemplateParameters(parameters: BsParameter[] = []) {
     };
 }
 
-function generateTemplateCommands(templates: BsTemplate[] = []) {
+function generateTemplateCommands(templates: Template[] = []) {
     return (y: Argv): Argv<GenerateArguments> => {
         const sortedTemplates = sortBy(generateTemplateFullname, templates);
         return sortedTemplates
@@ -176,7 +176,7 @@ function initTemplateCommands() {
             });
 }
 
-export default async function parseArguments(config: BsConfig | undefined): Promise<BsArguments> {
+export default async function parseArguments(config: Config | undefined): Promise<Arguments> {
     return yargs(hideBin(process.argv))
         .parserConfiguration({ 'greedy-arrays': false })
         .usage('$0: bootstrap files quickly and efficiently')

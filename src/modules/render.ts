@@ -1,6 +1,6 @@
 import Handlebars from 'handlebars';
 import pluralize from 'pluralize';
-import { BsFile, isFileWithContent } from '../types.js';
+import { File, isFileWithContent } from '../types.js';
 import { capitalize, convertNameToPath, convertToCase, replaceWithCases } from './utils.js';
 
 Handlebars.registerHelper('plural', (str: string) => pluralize.plural(str));
@@ -18,7 +18,7 @@ export function renderString(str: string, params: Record<string, any>): string {
     return Handlebars.compile(str)(params);
 }
 
-export async function renderFile(file: BsFile, params: Record<string, any>): Promise<BsFile> {
+export async function renderFile(file: File, params: Record<string, any>): Promise<File> {
     if (isFileWithContent(file)) {
         const { name, path } = convertNameToPath(params.name, file.path);
 
@@ -31,7 +31,7 @@ export async function renderFile(file: BsFile, params: Record<string, any>): Pro
     throw new Error();
 }
 
-export function unrenderFile(file: BsFile, params: Record<string, any>): BsFile {
+export function unrenderFile(file: File, params: Record<string, any>): File {
     if (isFileWithContent(file)) {
         return {
             path: replaceWithCases(file.path, params.name),

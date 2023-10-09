@@ -8,13 +8,13 @@ import {
 } from '../modules/config.js';
 import { unrenderFile } from '../modules/render.js';
 import { escapeHandlebars, getNameFromPaths } from '../modules/utils.js';
-import { BsConfig, BsTemplate, CreateArguments } from '../types.js';
+import { Config, Template, CreateArguments } from '../types.js';
 
 async function createTemplateFromFiles(
     templateName: string,
     filenames: string[],
     nameToReplace?: string
-): Promise<BsTemplate> {
+): Promise<Template> {
     const [namespace, name] = templateName.split(':');
     return {
         name,
@@ -33,7 +33,7 @@ async function createTemplateFromFiles(
 }
 
 export default async function create(
-    config: BsConfig | undefined,
+    config: Config | undefined,
     _: (number | string)[],
     params: CreateArguments
 ) {
@@ -57,7 +57,7 @@ export default async function create(
         );
     }
 
-    let template: BsTemplate | null = null;
+    let template: Template | null = null;
     if (patterns.length > 0) {
         const files = await globby(patterns, { gitignore });
         if (files.length === 0) {

@@ -4,31 +4,31 @@ import { mkdirp } from 'mkdirp';
 import { dirname } from 'path';
 import { renderString } from '../modules/render.js';
 import { convertNameToPath, exists } from '../modules/utils.js';
-import { BsGenerator, BsGeneratorParams, BsStep } from '../types.js';
+import { Generator, GeneratorParams, Step } from '../types.js';
 
-interface BsFileData {
+interface FileData {
     path: string;
     content: string;
 }
 
-const validateBsFile = validate({
+const validateFileData = validate({
     path: [isString()],
     content: [isString()],
 });
 
-class FileGenerator implements BsGenerator {
-    config: BsFileData;
+class FileGenerator implements Generator {
+    config: FileData;
 
-    params: BsGeneratorParams;
+    params: GeneratorParams;
 
-    constructor({ type, ...config }: BsStep, params: BsGeneratorParams) {
-        this.config = config as unknown as BsFileData;
+    constructor({ type, ...config }: Step, params: GeneratorParams) {
+        this.config = config as unknown as FileData;
         this.params = params;
     }
 
     async prepare() {
         // TODO: sync validation
-        this.config = await validateBsFile(this.config);
+        this.config = await validateFileData(this.config);
 
         const { name, path } = convertNameToPath(this.params.name, this.config.path);
 

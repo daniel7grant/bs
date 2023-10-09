@@ -1,9 +1,9 @@
 import FileGenerator from '../generators/file.js';
 import { findTemplate, getConfigFile } from '../modules/config.js';
-import { BsConfig, GenerateArguments } from '../types.js';
+import { Config, GenerateArguments } from '../types.js';
 
 export default async function generate(
-    config: BsConfig | undefined,
+    config: Config | undefined,
     [, templateName]: (number | string)[],
     { names, force, _, ...params }: GenerateArguments
 ): Promise<void> {

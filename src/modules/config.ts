@@ -4,8 +4,8 @@ import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import path from 'path';
 import { difference, uniqBy } from 'ramda';
-import { BsConfig, BsFile, BsTemplate } from '../types.js';
-import validateBsConfig from './validation.js';
+import { Config, File, Template } from '../types.js';
+import validateConfig from './validation.js';
 
 const configurationPaths = [
     '.bsconfig.yaml',
@@ -28,7 +28,7 @@ const configurationPaths = [
  * @param template the template object
  * @returns the namespaced name
  */
-export function generateTemplateFullname(template: BsTemplate): string {
+export function generateTemplateFullname(template: Template): string {
     return `${template.namespace}:${template.name}`;
 }
 
@@ -47,7 +47,7 @@ export function generateTemplateFullname(template: BsTemplate): string {
  * @param template the template object
  * @returns an array of names
  */
-export function generateTemplateNames(template?: BsTemplate): string[] {
+export function generateTemplateNames(template?: Template): string[] {
     return template ? [generateTemplateFullname(template), template.name, ...template.aliases] : [];
 }
 
@@ -57,7 +57,7 @@ export function generateTemplateNames(template?: BsTemplate): string[] {
  * @param template the template object
  * @returns the list of the parameter names
  */
-export function generateTemplateParamNames(template?: BsTemplate): string[] {
+export function generateTemplateParamNames(template?: Template): string[] {
     return template?.parameters?.map((p) => p.name) ?? [];
 }
 
@@ -75,7 +75,7 @@ export function generateTemplateParamNames(template?: BsTemplate): string[] {
  * @param name the name, fullname or alias of the template
  * @returns the first matching template object or undefined if none found
  */
-export function findTemplate(templates: BsTemplate[], name: string): BsTemplate | undefined {
+export function findTemplate(templates: Template[], name: string): Template | undefined {
     return (
         templates.find((t) => generateTemplateFullname(t) === name) ??
         templates.find((t) => t.name === name) ??
@@ -96,8 +96,8 @@ export function findTemplate(templates: BsTemplate[], name: string): BsTemplate 
  * @returns the list of found templates
  * @throws if one of the templates not found
  */
-export function findReferences(templates: BsTemplate[], includes: string[]): BsTemplate[] {
-    const referencedTemplates: [string, BsTemplate | undefined][] = includes.map((t) => [
+export function findReferences(templates: Template[], includes: string[]): Template[] {
+    const referencedTemplates: [string, Template | undefined][] = includes.map((t) => [
         t,
         findTemplate(templates, t),
     ]);
@@ -122,10 +122,10 @@ export function findReferences(templates: BsTemplate[], includes: string[]): BsT
  * @returns the list of included templates recursively, or a one-item list if files templates
  */
 // export function getReferencedFileTemplates(
-//     templates: BsTemplate[],
-//     template: BsTemplate,
+//     templates: Template[],
+//     template: Template,
 //     alreadyIncluded: string[] = []
-// ): BsFilesTemplate[] {
+// ): FilesTemplate[] {
 //     // TODO: fix validation here as well
 //     if ('files' in template && template.files.length > 0) {
 //         return [template];
@@ -150,7 +150,7 @@ export function findReferences(templates: BsTemplate[], includes: string[]): BsT
  * @param templates the list of files templates
  * @returns the list of files to render
  */
-// export function getFilesFromTemplates(templates: BsFilesTemplate[]): BsFile[] {
+// export function getFilesFromTemplates(templates: FilesTemplate[]): File[] {
 //     return uniqBy((f) => f.path, templates.flatMap((t) => t.files).reverse());
 // }
 
@@ -159,7 +159,7 @@ export function findReferences(templates: BsTemplate[], includes: string[]): BsT
  *
  * @returns the configuration object
  */
-export function initConfig(): BsConfig {
+export function initConfig(): Config {
     return {
         templates: [],
     };
@@ -182,7 +182,7 @@ export async function getConfigFile(): Promise<string | undefined> {
  * @returns the config object or undefined if not found
  * @throws error if config loading failed
  */
-export async function loadConfig(): Promise<BsConfig | undefined> {
+export async function loadConfig(): Promise<Config | undefined> {
     const filename = await getConfigFile();
     if (!filename) {
         return undefined;
@@ -190,7 +190,7 @@ export async function loadConfig(): Promise<BsConfig | undefined> {
     try {
         const content = await readFile(filename, 'utf8');
         // TODO: add back the validation
-        const config = load(content) as BsConfig;
+        const config = load(content) as Config;
         return config;
     } catch (error: any) {
         throw new Error(`Loading config "${filename}" failed: ${error.message}\n`);
@@ -204,7 +204,7 @@ export async function loadConfig(): Promise<BsConfig | undefined> {
  * @param file optional the file name to save to
  * @returns the filename the config has been saved
  */
-export async function saveConfig(config: BsConfig, file?: string): Promise<string> {
+export async function saveConfig(config: Config, file?: string): Promise<string> {
     const filename = file ?? (await getConfigFile()) ?? configurationPaths[0];
     try {
         await writeFile(filename, dump(config), 'utf8');

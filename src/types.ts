@@ -1,26 +1,26 @@
-export interface BsGeneratorParams {
+export interface GeneratorParams {
     name: string;
     force: boolean;
     [k: string]: unknown;
 }
 
-export interface BsGenerator {
+export interface Generator {
     prepare: () => Promise<void>;
     generate: () => Promise<void>;
 }
 
-export interface BsFileWithContent {
+export interface FileWithContent {
     path: string;
     content: string;
 }
 
-export type BsFile = BsFileWithContent;
+export type File = FileWithContent;
 
-export function isFileWithContent(file: BsFile): file is BsFileWithContent {
+export function isFileWithContent(file: File): file is FileWithContent {
     return !!file.content;
 }
 
-export interface BsParameter {
+export interface Parameter {
     name: string;
     description?: string;
     type: string;
@@ -28,22 +28,22 @@ export interface BsParameter {
     required: boolean;
 }
 
-export interface BsStep {
+export interface Step {
     type: string;
     [k: string]: unknown;
 }
 
-export interface BsTemplate {
+export interface Template {
     name: string;
     namespace: string;
     aliases: string[];
     description?: string;
-    parameters?: BsParameter[];
-    steps: BsStep[];
+    parameters?: Parameter[];
+    steps: Step[];
 }
 
-export interface BsConfig {
-    templates: BsTemplate[];
+export interface Config {
+    templates: Template[];
 }
 
 export interface BaseArguments {
@@ -71,7 +71,7 @@ export interface InitArguments extends BaseArguments {
     force: boolean;
 }
 
-export type BsArguments = CreateArguments | GenerateArguments | InitArguments;
+export type Arguments = CreateArguments | GenerateArguments | InitArguments;
 
 export const COMMANDS = {
     COMPLETION: 'completion',
@@ -92,14 +92,14 @@ export const COMMAND_OPTIONS: {
     INIT: ['directory', 'force'],
 };
 
-export function isCreateCommand(args: BsArguments): args is CreateArguments {
+export function isCreateCommand(args: Arguments): args is CreateArguments {
     return args._[0] === COMMANDS.CREATE;
 }
 
-export function isGenerateCommand(args: BsArguments): args is GenerateArguments {
+export function isGenerateCommand(args: Arguments): args is GenerateArguments {
     return args._[0] === COMMANDS.GENERATE[0] || args._[0] === COMMANDS.GENERATE[1];
 }
 
-export function isInitCommand(args: BsArguments): args is InitArguments {
+export function isInitCommand(args: Arguments): args is InitArguments {
     return args._[0] === COMMANDS.INIT;
 }
