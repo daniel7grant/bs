@@ -1,8 +1,10 @@
 import { constants } from 'fs';
-import { access } from 'fs/promises';
+import { access, mkdtemp } from 'fs/promises';
+import { tmpdir } from 'os';
 import path from 'path';
 import pluralize from 'pluralize';
 import { takeWhile, transpose, uniq } from 'ramda';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Check if file exists with filename
@@ -15,6 +17,22 @@ export async function exists(filename: string): Promise<boolean> {
         () => true,
         () => false
     );
+}
+
+let tmp: string | undefined;
+/**
+ * Create a temporary file named with uuid, in a directory in `os.tmpdir`
+ *
+ * @example
+ *     const tmpfile = await mktmp(); // => "/tmp/bs-8e3ebcb1-a19d-4fc0-8727-475bc19577db"
+ *
+ * @returns the path to the temporary file
+ */
+export async function mktmp(): Promise<string> {
+    if (!tmp) {
+        tmp = await mkdtemp(path.join(tmpdir(), 'bs-'));
+    }
+    return path.join(tmp, uuid());
 }
 
 /**
@@ -203,4 +221,20 @@ export function replaceWithCases(str: string, name: string): string {
  */
 export function escapeHandlebars(str: string): string {
     return str.replace(/\{\{/g, '\\{{');
+}
+
+/**
+ * Runs a list of promises in serial, and returns the results in an array.
+ *
+ * @param promises the list of promises
+ * @returns the results in an array
+ */
+export function serialPromise<T>(promises: (() => Promise<T>)[]): Promise<T[]> {
+    return promises.reduce(
+        (previous, promise) =>
+            previous.then((previousResults) =>
+                promise().then((result) => previousResults.concat(result))
+            ),
+        Promise.resolve([] as T[])
+    );
 }

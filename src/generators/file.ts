@@ -26,6 +26,10 @@ class FileGenerator implements Generator {
         this.params = params;
     }
 
+    getKey() {
+        return this.config.path;
+    }
+
     async prepare() {
         // TODO: sync validation
         this.config = await validateFileData(this.config);

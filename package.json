@@ -30,6 +30,8 @@
         "mkdirp": "^3.0.1",
         "pluralize": "^8.0.0",
         "ramda": "^0.28.0",
+        "split2": "^4.2.0",
+        "uuid": "^9.0.1",
         "yargs": "^17.5.1"
     },
     "devDependencies": {
@@ -39,6 +41,8 @@
         "@types/node": "^17.0.39",
         "@types/pluralize": "0.0.28",
         "@types/ramda": "^0.28.14",
+        "@types/split2": "^4.2.1",
+        "@types/uuid": "^9.0.5",
         "@types/yargs": "^17.0.12",
         "@typescript-eslint/eslint-plugin": "^5.27.1",
         "@typescript-eslint/parser": "^5.27.1",

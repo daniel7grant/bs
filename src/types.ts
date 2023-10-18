@@ -5,6 +5,7 @@ export interface GeneratorParams {
 }
 
 export interface Generator {
+    getKey: () => string;
     prepare: () => Promise<void>;
     generate: () => Promise<void>;
 }

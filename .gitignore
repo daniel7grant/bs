@@ -5,6 +5,7 @@ node_modules/
 # testing values
 .bsconfig.yaml
 components
+testing
 
 # other
 TODO

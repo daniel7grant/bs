@@ -1,5 +1,8 @@
+import { groupBy, values } from 'ramda';
 import FileGenerator from '../generators/file.js';
+import LineGenerator from '../generators/line.js';
 import { findTemplate, getConfigFile } from '../modules/config.js';
+import { serialPromise } from '../modules/utils.js';
 import { Config, GenerateArguments } from '../types.js';
 
 export default async function generate(
@@ -27,6 +30,9 @@ export default async function generate(
                             case 'file': {
                                 return new FileGenerator(step, { name, force, ...params });
                             }
+                            case 'line': {
+                                return new LineGenerator(step, { name, force, ...params });
+                            }
                             default:
                                 throw new Error(`There is no plugin for ${step.type}.`);
                         }
@@ -46,6 +52,10 @@ export default async function generate(
         throw new Error(`Preparation failed: ${prepareFailed.map((r) => r.reason).join(', ')}`);
     }
 
-    // Trigger the steps and finish the generation
-    await Promise.all(steps.map((step) => step.generate()));
+    // Collect the steps into groups based on key (usually filename)
+    // The groups are ran in serial, so there are no race conditions when modifying the file
+    const groupedSteps = values(groupBy((step) => step.getKey(), steps));
+    await Promise.all(
+        groupedSteps.map((group) => serialPromise(group.map((step) => () => step.generate())))
+    );
 }
